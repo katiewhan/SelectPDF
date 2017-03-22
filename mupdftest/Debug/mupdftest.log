@@ -1,0 +1,3 @@
+﻿Debug\MuPdfApi.obj : warning LNK4042: object specified more than once; extras ignored
+Debug\PdfDocument.obj : warning LNK4042: object specified more than once; extras ignored
+x64\Debug\MuPdfApi.obj : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'X86'
