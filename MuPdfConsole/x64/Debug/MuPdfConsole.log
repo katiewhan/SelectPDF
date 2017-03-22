@@ -1,2 +1,0 @@
-﻿  MuPdfConsole.cpp
-c:\users\katiehan\documents\mupdftest\mupdfconsole\pdfdocument.h(4): fatal error C1083: Cannot open include file: 'mupdf\fitz.h': No such file or directory
