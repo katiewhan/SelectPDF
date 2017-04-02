@@ -1,17 +1,18 @@
 #include "Selection.h"
 
-Selection::Selection()
+Selection::Selection(int page)
 {
-	m_rects = nullptr;
-	fz_var(m_rects);
-
-	m_num_rects = 0;
+	m_page_num = page;
 }
 
-fz_rect* Selection::GetRects() {
+std::vector<fz_rect> Selection::GetRects() {
 	return m_rects;
 }
 
 int Selection::GetNumRects() {
-	return m_num_rects;
+	return m_rects.size();
+}
+
+char* Selection::GetText() {
+	return m_text;
 }

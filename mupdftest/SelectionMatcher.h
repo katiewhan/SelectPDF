@@ -1,10 +1,13 @@
 #pragma once
-
+#include "Selection\Selection.h"
+#include "MuPdfData.h"
 #include <string>
+#include <memory>
 
-ref class SelectionMatcher sealed
+class SelectionMatcher
 {
-internal:
+public:
 	SelectionMatcher();
-	char* GetSelection(double* pointList, int size);
+	~SelectionMatcher();
+	std::unique_ptr<Selection> GetSelection(mu_point* pointList, int size, int page);
 };

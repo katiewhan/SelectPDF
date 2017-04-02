@@ -67,6 +67,30 @@ EXPORT_API bool AddSelection(mu_point* pointList, int size) {
 	return m_doc->AddSelection(pointList, size);
 }
 
-EXPORT_API int GetHighlights(fz_rect* rectList[], int max) {
+EXPORT_API int GetHighlights(mu_rect* rectList[], int max) {
+	/*mu_rect* r = new mu_rect[1];
+	r[0].x0 = 1;
+	r[0].x1 = 2;
+	r[0].y0 = 3;
+	r[0].y1 = 4;*/
+	/*std::vector<fz_rect> recvec;
+	recvec.push_back(r);
+	*rectList = recvec.data();*/
+
+	/**rectList = r;*/
+	//(*rectList)[0] = 4;
+	//(*rectList)[1] = 3;
+	//(*rectList)[2] = 2;
+	//(*rectList)[3] = 5;
+	//(*rectList)[4] = 6;
+	//return 1;
 	return m_doc->GetHighlights(rectList, max);
+}
+
+EXPORT_API int GetNumSelections() {
+	return m_doc->GetNumSelections();
+}
+
+EXPORT_API char* GetSelectionContent(int index) {
+	return m_doc->GetSelectionContent(index);
 }

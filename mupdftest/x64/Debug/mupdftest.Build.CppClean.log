@@ -1,8 +1,9 @@
-c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\pdfdocument.obj
+c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\mupdfapi.obj
 c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\selection.obj
+c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\pdfdocument.obj
+c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\bracketselection.obj
 c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\lineselection.obj
 c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\selectionmatcher.obj
-c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\mupdfapi.obj
 c:\users\katiehan\documents\mupdftest\mupdftest\x64\debug\vc140.pdb
 c:\users\katiehan\documents\mupdftest\x64\debug\mupdftest\mupdftest.ilk
 c:\users\katiehan\documents\mupdftest\x64\debug\mupdftest\mupdftest.dll

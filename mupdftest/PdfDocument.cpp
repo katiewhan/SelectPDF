@@ -3,8 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-
-#include "Selection\LineSelection.h"
+#include <algorithm> 
 
 namespace MuPdfApi
 {
@@ -17,11 +16,7 @@ namespace MuPdfApi
 		m_context = nullptr;
 		m_current_page_num = -1;
 
-		m_selection = ref new SelectionMatcher();
-
-		m_rects = nullptr;
-		m_num_rects = 0;
-
+		m_selection = std::make_unique<SelectionMatcher>();
 
 		fz_var(m_buffer);
 		fz_var(m_pixmap);
@@ -29,8 +24,6 @@ namespace MuPdfApi
 		fz_var(m_outline);
 		fz_var(m_document);
 		fz_var(m_context);
-		fz_var(m_rects);
-
 	}
 
 	void PdfDocument::Dispose() {
@@ -87,11 +80,13 @@ namespace MuPdfApi
 	}
 
 	bool PdfDocument::GoToNextPage() {
-		return GotoPage(m_current_page_num + 1);
+		bool res = GotoPage(m_current_page_num + 1);
+		return res;
 	}
 
 	bool PdfDocument::GoToPrevPage() {
-		return GotoPage(m_current_page_num - 1);
+		bool res = GotoPage(m_current_page_num - 1);
+		return res;
 	}
 
 	int PdfDocument::GetCurrentPageNum() {
@@ -146,18 +141,17 @@ namespace MuPdfApi
 				fz_drop_pixmap(m_context, m_pixmap);
 			}
 
-			fz_rect pagebounds;
-			fz_bound_page(m_context, m_current_page, &pagebounds);
-			float xscale = (float)width / (float)(pagebounds.x1 - pagebounds.x0);
-			float yscale = (float)height / (float)(pagebounds.y1 - pagebounds.y0);
-			fz_matrix ctm = fz_identity;
-			fz_scale(&ctm, xscale, yscale);
+			/*fz_rect pagebounds;
+			fz_bound_page(m_context, m_current_page, &pagebounds);*/
+			float xscale = (float)width / (float)(m_rect.x1 - m_rect.x0);
+			float yscale = (float)height / (float)(m_rect.y1 - m_rect.y0);
+			m_ctm = fz_identity;
+			fz_scale(&m_ctm, xscale, yscale);
 
 			fz_irect ibounds;
-			fz_round_rect(&ibounds, fz_transform_rect(&pagebounds, &ctm));
+			fz_round_rect(&ibounds, fz_transform_rect(&m_rect, &m_ctm));
 			fz_rect bounds;
 			fz_rect_from_irect(&bounds, &ibounds);
-
 
 			colorspace = fz_device_rgb(m_context);
 
@@ -170,7 +164,7 @@ namespace MuPdfApi
 			fz_clear_pixmap_with_value(m_context, m_pixmap, 0xff);
 			idev = fz_new_draw_device(m_context, nullptr, m_pixmap);
 
-			fz_run_display_list(m_context, pagelist, idev, &ctm, &bounds, nullptr);
+			fz_run_display_list(m_context, pagelist, idev, &m_ctm, &bounds, nullptr);
 
 			// test
 			m_buffer = png_from_pixmap(m_context, m_pixmap, 0);
@@ -240,6 +234,9 @@ namespace MuPdfApi
 	}
 
 	bool PdfDocument::AddSelection(mu_point* pointList, int size) {
+		if (size <= 0) {
+			return false;
+		}
 		//fz_print_stext_page_html(fz_context *ctx, fz_output *out, fz_stext_page *page)
 		
 		fz_device* dev;
@@ -251,10 +248,10 @@ namespace MuPdfApi
 		fz_disable_device_hints(m_context, dev, FZ_IGNORE_IMAGE);
 		fz_matrix ctm = fz_identity;
 
-		fz_run_page(m_context, m_current_page, dev, &ctm, NULL);
+		fz_run_page(m_context, m_current_page, dev, &m_ctm, NULL);
 
-		Selection sel = LineSelection(pointList[0].x, pointList[size - 1].x, pointList[0].y);
-		sel.Select(page);
+		m_selection_list.push_back(m_selection->GetSelection(pointList, size, m_current_page_num));
+		m_selection_list.back().get()->Select(m_context, page, m_ctm);
 
 		return true;
 		//fz_try(m_context) {
@@ -290,11 +287,28 @@ namespace MuPdfApi
 
 	}
 
-	int PdfDocument::GetHighlights(fz_rect* rectList[], int max) {
-		int size = max < m_num_rects ? max : m_num_rects;
-		for (int i = 0; i < size; i++) {
-			rectList[i] = &m_rects[i];
-		}
-		return size;
+	int PdfDocument::GetHighlights(mu_rect* rectList[], int max) {
+		int num_rects = m_selection_list.back().get()->GetNumRects();
+		num_rects = std::min(num_rects, max);
+
+		std::vector<fz_rect> rects = m_selection_list.back().get()->GetRects();
+
+		mu_rect* r = new mu_rect[num_rects];
+		for (int i = 0; i < num_rects; i++) {
+			(*rectList)[i].x0 = rects[i].x0;
+			(*rectList)[i].y0 = rects[i].y0;
+			(*rectList)[i].x1 = rects[i].x1;
+			(*rectList)[i].y1 = rects[i].y1;
+ 		}
+
+		return num_rects;
+	}
+
+	int PdfDocument::GetNumSelections() {
+		return m_selection_list.size();
+	}
+
+	char* PdfDocument::GetSelectionContent(int index) {
+		return m_selection_list[index].get()->GetText();
 	}
 }

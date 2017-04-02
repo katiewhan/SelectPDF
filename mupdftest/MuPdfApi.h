@@ -41,5 +41,10 @@ extern "C" {
 
 	EXPORT_API bool AddSelection(mu_point* pointList, int size);
 
-	EXPORT_API int GetHighlights(fz_rect* rectList[], int max);
+	EXPORT_API int GetHighlights(mu_rect* rectList[], int max);
+
+	EXPORT_API int GetNumSelections();
+
+	EXPORT_API char* GetSelectionContent(int index);
+
 } // end of export C block

@@ -5,20 +5,23 @@ extern "C" {
 }
 
 #include <string>
+#include <vector>
+
+const int max_text = 1024;
 
 class Selection
 {
 public:
-	Selection();
-	fz_rect* GetRects();
+	Selection(int page);
+	std::vector<fz_rect> GetRects();
 	int GetNumRects();
+	char* GetText();
 
-	virtual void Select(fz_stext_page* page) {};
+	virtual void Select(fz_context* ctx, fz_stext_page* page, fz_matrix ctm) = 0;
 
-private:
-
-	std::string m_content;
-	fz_rect* m_rects;
-	int m_num_rects;
+protected:
+	int m_page_num;
+	char m_text[max_text];
+	std::vector<fz_rect> m_rects;
 };
 

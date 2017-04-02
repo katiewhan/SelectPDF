@@ -169,20 +169,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Selection\LineSelection.h" />
-    <ClInclude Include="MuPdfApi.h" />
-    <ClInclude Include="PdfDocument.h" />
-    <ClInclude Include="Selection\Selection.h" />
-    <ClInclude Include="SelectionMatcher.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Selection\LineSelection.cpp" />
-    <ClCompile Include="MuPdfApi.cpp" />
-    <ClCompile Include="PdfDocument.cpp" />
-    <ClCompile Include="Selection\Selection.cpp" />
-    <ClCompile Include="SelectionMatcher.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Library Include="lib\libfonts.lib" />
     <Library Include="lib\libmupdf.lib" />
     <Library Include="lib\libthirdparty.lib" />
@@ -198,6 +184,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MuPdfApi.cpp" />
+    <ClCompile Include="PdfDocument.cpp" />
+    <ClCompile Include="SelectionMatcher.cpp" />
+    <ClCompile Include="Selection\BracketSelection.cpp" />
+    <ClCompile Include="Selection\LineSelection.cpp" />
+    <ClCompile Include="Selection\Selection.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MuPdfApi.h" />
+    <ClInclude Include="MuPdfData.h" />
+    <ClInclude Include="PdfDocument.h" />
+    <ClInclude Include="SelectionMatcher.h" />
+    <ClInclude Include="Selection\BracketSelection.h" />
+    <ClInclude Include="Selection\LineSelection.h" />
+    <ClInclude Include="Selection\Selection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

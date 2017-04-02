@@ -7,10 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="xBackground" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Button Content="Load File" Click="Load_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30"></Button>
         <Button Content="Selections" Click="Selection_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30,10,30,80"></Button>
-        <Grid x:Name="pdfContainer"></Grid>
+        <Grid x:Name="pdfContainer">
+            <Canvas x:Name="pdfCanvas"></Canvas>
+        </Grid>
     </Grid>
 
 </Page>

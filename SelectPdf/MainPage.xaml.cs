@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -33,7 +34,7 @@ namespace SelectPdf
         public int y;
     };
 
-    public struct FzRect
+    public struct MuRect
     {
         public int x0, y0;
         public int x1, y1;
@@ -44,6 +45,7 @@ namespace SelectPdf
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private const int MAX_NUM = 1024;
 
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Open(byte[] data, int length);
@@ -80,11 +82,16 @@ namespace SelectPdf
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool AddSelection(MuPoint[] pointList, int size);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetHighlights([MarshalAs(UnmanagedType.LPArray)] ref FzRect[] rectList, int size);
+        public static extern int GetHighlights([MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_NUM)] ref MuRect[] rectList, int size);
+        [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetNumSelections();
+        [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetSelectionContent(int index);
 
         private IntPtr currentDocument = IntPtr.Zero;
         private List<MuPoint> pointList = new List<MuPoint>();
         private bool selecting = false;
+        private int currentPageNum = -1;
 
         private static byte[] file;
 
@@ -99,46 +106,98 @@ namespace SelectPdf
             pdfContainer.PointerWheelChanged += new PointerEventHandler(pdfContainer_PointerWheel);
         }
 
+        private MuPoint GetPdfPoint(double x, double y)
+        {
+            double size = 2000; // size in pixels
+
+            Image pdf = new Image();
+            foreach(Image o in pdfContainer.Children.OfType<Image>())
+            {
+                pdf = o;
+            }
+            double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
+            double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
+            double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
+            double heightRatio = size / pdf.ActualHeight;
+            double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
+
+            MuPoint point = new MuPoint();
+            point.y = Convert.ToInt32((y - offsetY) * heightRatio);
+            point.x = Convert.ToInt32((x - offsetX) * widthRatio);
+            return point;
+        }
+
+        private void DrawRect(MuRect rect)
+        {
+            double size = 2000; // size in pixels
+
+            Image pdf = new Image();
+            foreach (Image o in pdfContainer.Children.OfType<Image>())
+            {
+                pdf = o;
+            } // get currentPage
+            double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
+            double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
+            double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
+            double heightRatio = size / pdf.ActualHeight;
+            double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
+
+            Rectangle r = new Rectangle();
+            r.Fill = new SolidColorBrush(Windows.UI.Colors.LightYellow);
+            r.Fill.Opacity = 0.7;
+            r.Width = (rect.x1 - rect.x0) / widthRatio;
+            r.Height = (rect.y1 - rect.y0) / heightRatio;
+            r.Margin = new Thickness((rect.x0 / widthRatio) + offsetX, (rect.y0 / heightRatio) + offsetY, 0, 0);
+            pdfCanvas.Children.Add(r);
+            Canvas.SetZIndex(pdfCanvas, 10);
+
+        }
+
         private void pdfContainer_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var p = e.GetCurrentPoint(sender as UIElement).Position;
-            MuPoint point = new MuPoint();
-            point.x = Convert.ToInt32(p.X);
-            point.y = Convert.ToInt32(p.Y);
-            pointList.Add(point);
+            if (pdfContainer.Children.Count > 1 )
+            {
+                var p = e.GetCurrentPoint(sender as UIElement).Position;
+                pointList.Add(GetPdfPoint(p.X, p.Y));
+                selecting = true;
+            }
 
-            selecting = true;
             e.Handled = true;
         }
 
-        private async void pdfContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            for (var i = 0; i < pointList.Count; i++) {
-                Debug.WriteLine(pointList[i].x + ", " + pointList[i].y);
-            }
+        private void pdfContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {   
+            bool selected = AddSelection(pointList.ToArray(), pointList.Count);
+            Debug.WriteLine(selected);
             
-            bool o = AddSelection(pointList.ToArray(), pointList.Count);
-            Debug.WriteLine(o);          
+            if (selected)
+            {
+                MuRect[] rectList = new MuRect[MAX_NUM];
+                int num = GetHighlights(ref rectList, MAX_NUM);
+                //var r = Marshal.PtrToStructure<FzRect>(ptr);
+                //string c = Marshal.PtrToStringAnsi(output);
+                //Marshal.FreeHGlobal(output);
+                Debug.WriteLine("output");
+                Debug.WriteLine(num);
 
-            FzRect[] rectList = new FzRect[100];
-            int num = GetHighlights(ref rectList, 100);
-            //string c = Marshal.PtrToStringAnsi(output);
-            //Marshal.FreeHGlobal(output);
-            Debug.WriteLine("output");
-            Debug.WriteLine(num);
+                for (int k = 0; k < num; k++)
+                {
+                    //MuRect t = rectList[k];
+                    DrawRect(rectList[k]);
+                }
+            }
+
+            pointList.Clear();
             selecting = false;
             e.Handled = true;
         }
 
         private void pdfContainer_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (selecting)
+            if (selecting && pdfContainer.Children.Count > 1)
             {
                 var p = e.GetCurrentPoint(sender as UIElement).Position;
-                MuPoint point = new MuPoint();
-                point.x = Convert.ToInt32(p.X);
-                point.y = Convert.ToInt32(p.Y);
-                pointList.Add(point);
+                pointList.Add(GetPdfPoint(p.X, p.Y));
             }
             e.Handled = true;
         }
@@ -146,14 +205,30 @@ namespace SelectPdf
         private void pdfContainer_PointerWheel(object sender, PointerRoutedEventArgs e)
         {
             var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
+            bool result;
+            int updatedPage;
             if (d < 0)
             {
-                GoToNextPage();
-                Render();
+                result = GoToNextPage();
+                updatedPage = currentPageNum + 1;
             } else
             {
-                GoToPrevPage();
+                result = GoToPrevPage();
+                updatedPage = currentPageNum - 1;
+            }
+
+            if (result)
+            {
+                //if (currentPageNum <= pdfContainer.Children.Count)
+                //{
+                //    // show updatedPage
+                //    // hide currentPage
+                //} else
+                //{
                 Render();
+                //}
+                currentPageNum = updatedPage;
+
             }
             e.Handled = true;
         }
@@ -214,6 +289,7 @@ namespace SelectPdf
                 var bmp = await ByteArrayToBitmapImage(mngdArray);
                 var img = new Image();
                 img.Source = bmp;
+                img.Name = "Page" + currentPageNum;
                 pdfContainer.Children.Add(img);
             }
             catch (Exception ex)
@@ -234,12 +310,16 @@ namespace SelectPdf
 
             currentDocument = Open(file, file.Length);
             ActivateDocument(currentDocument);
+            currentPageNum = 0;
 
             Render();
         }
 
         private void Selection_Button_Click(object sender, RoutedEventArgs e)
         {
+            IntPtr text = GetSelectionContent(0);
+            string c = Marshal.PtrToStringAnsi(text);
+            Debug.Write(c);
 
         }
     }

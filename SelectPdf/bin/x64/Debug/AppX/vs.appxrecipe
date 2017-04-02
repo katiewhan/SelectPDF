@@ -16,7 +16,7 @@
     <PackageRegistrationPath>
     </PackageRegistrationPath>
     <RemoveNonLayoutFiles>true</RemoveNonLayoutFiles>
-    <RegisteredManifestChecksum>4388A2C66A450CBC535B42829AA325D5D47BE19B4D6B9DC8095BEDE11C7BCC1E</RegisteredManifestChecksum>
+    <RegisteredManifestChecksum>41746725812E6F66D2462C7B1C2DD7E709CCFFFC253D203C04F8FBBC8DEB5A56</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>a89434f9-20ee-4b20-a1ed-8c6e15ddddc7_1.0.0.0_x64__cr98xmp5jc9m6</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>a89434f9-20ee-4b20-a1ed-8c6e15ddddc7_cr98xmp5jc9m6!App</RegisteredUserModeAppID>
     <RegisteredPackageID>a89434f9-20ee-4b20-a1ed-8c6e15ddddc7</RegisteredPackageID>
@@ -28,13 +28,13 @@
     <AppXManifest Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-03-22T03:36:58.052</Modified>
+      <Modified>2017-04-01T22:20:58.176</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.exe">
       <PackagePath>entrypoint\SelectPdf.exe</PackagePath>
-      <Modified>2017-03-22T03:36:56.970</Modified>
+      <Modified>2017-04-01T22:20:56.588</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Microsoft.CSharp\4.0.0\lib\netcore50\Microsoft.CSharp.dll">
       <PackagePath>Microsoft.CSharp.dll</PackagePath>
@@ -448,9 +448,17 @@
       <PackagePath>System.Xml.XmlSerializer.dll</PackagePath>
       <Modified>2015-07-23T03:11:12.000</Modified>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Win2D.uwp\1.20.0\runtimes\win10-x64\native\Microsoft.Graphics.Canvas.dll">
+      <PackagePath>Microsoft.Graphics.Canvas.dll</PackagePath>
+      <Modified>2016-11-30T07:58:38.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Win2D.uwp\1.20.0\lib\uap10.0\Microsoft.Graphics.Canvas.winmd">
+      <PackagePath>Microsoft.Graphics.Canvas.winmd</PackagePath>
+      <Modified>2016-11-30T07:58:38.000</Modified>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\mupdftest.dll">
       <PackagePath>mupdftest.dll</PackagePath>
-      <Modified>2017-03-22T03:36:52.778</Modified>
+      <Modified>2017-04-01T22:20:51.012</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Properties\Default.rd.xml">
       <PackagePath>Properties\Default.rd.xml</PackagePath>
@@ -492,7 +500,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.xr.xml">
       <PackagePath>SelectPdf.xr.xml</PackagePath>
-      <Modified>2017-03-17T03:15:12.836</Modified>
+      <Modified>2017-03-26T22:15:19.873</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -501,11 +509,11 @@
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-03-22T03:36:57.886</Modified>
+      <Modified>2017-04-01T22:20:57.098</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\SelectPdf.exe">
       <PackagePath>SelectPdf.exe</PackagePath>
-      <Modified>2017-03-22T03:36:58.049</Modified>
+      <Modified>2017-04-01T22:20:58.165</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

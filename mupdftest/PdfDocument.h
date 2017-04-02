@@ -5,14 +5,11 @@ extern "C" {
 	#include "mupdf\pdf.h"
 }
 
-#include "SelectionMatcher.h"
+#include "MuPdfData.h"
 #include "Selection\Selection.h"
+#include "SelectionMatcher.h"
 #include <vector>
-
-struct mu_point {
-	int x;
-	int y;
-};
+#include <memory>
 
 namespace MuPdfApi
 {
@@ -37,8 +34,9 @@ namespace MuPdfApi
 		fz_buffer * png_from_pixmap(fz_context *ctx, fz_pixmap *pix, int drop);
 
 		bool AddSelection(mu_point* pointList, int size);
-		int GetHighlights(fz_rect* rectList[], int max);
-		//int GetHTML();
+		int GetHighlights(mu_rect* rectList[], int max);
+		int GetNumSelections();
+		char* GetSelectionContent(int index); 
 
 	private:
 		fz_context* m_context;
@@ -49,13 +47,10 @@ namespace MuPdfApi
 		fz_rect m_rect;
 		fz_buffer* m_buffer;
 		int m_current_page_num;
+		fz_matrix m_ctm;
 
-		SelectionMatcher^ m_selection;
-		//std::vector<Selection> m_selection_list;
-
-		// temp testing
-		fz_rect* m_rects;
-		int m_num_rects;
+		std::unique_ptr<SelectionMatcher> m_selection;
+		std::vector<std::unique_ptr<Selection>> m_selection_list;
 		
 	};
 }
