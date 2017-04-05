@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <algorithm> 
 
+#include "Selection\NullSelection.h"
+#include "MuPdfImageUtil.h"
+
 namespace MuPdfApi
 {
 	PdfDocument::PdfDocument() {
@@ -167,7 +170,7 @@ namespace MuPdfApi
 			fz_run_display_list(m_context, pagelist, idev, &m_ctm, &bounds, nullptr);
 
 			// test
-			m_buffer = png_from_pixmap(m_context, m_pixmap, 0);
+			m_buffer = MuPdfImageUtil::png_from_pixmap(m_context, m_pixmap, 0);
 			fz_close_device(m_context, dev);
 		}
 		fz_always(m_context)
@@ -193,46 +196,6 @@ namespace MuPdfApi
 		return m_buffer->data;
 	}
 
-	fz_buffer* PdfDocument::png_from_pixmap(fz_context *ctx, fz_pixmap *pix, int drop)
-	{
-		fz_buffer *buf = NULL;
-		fz_output *out;
-		fz_pixmap *pix2 = NULL;
-
-		fz_var(buf);
-		fz_var(out);
-		fz_var(pix2);
-
-		if (pix->w == 0 || pix->h == 0)
-			return NULL;
-
-		fz_try(ctx)
-		{
-			if (pix->colorspace && pix->colorspace != fz_device_gray(ctx) && pix->colorspace != fz_device_rgb(ctx))
-			{
-				pix2 = fz_new_pixmap(ctx, fz_device_rgb(ctx), pix->w, pix->h, pix->alpha);
-				fz_convert_pixmap(ctx, pix2, pix);
-				if (drop)
-					fz_drop_pixmap(ctx, pix);
-				pix = pix2;
-			}
-			buf = fz_new_buffer(ctx, 1024);
-			out = fz_new_output_with_buffer(ctx, buf);
-			fz_write_pixmap_as_png(ctx, out, pix);
-		}
-		fz_always(ctx)
-		{
-			fz_drop_pixmap(ctx, drop ? pix : pix2);
-			fz_drop_output(ctx, out);
-		}
-		fz_catch(ctx)
-		{
-			fz_drop_buffer(ctx, buf);
-			fz_rethrow(ctx);
-		}
-		return buf;
-	}
-
 	bool PdfDocument::AddSelection(mu_point* pointList, int size) {
 		if (size <= 0) {
 			return false;
@@ -251,9 +214,15 @@ namespace MuPdfApi
 		fz_run_page(m_context, m_current_page, dev, &m_ctm, NULL);
 
 		m_selection_list.push_back(m_selection->GetSelection(pointList, size, m_current_page_num));
-		m_selection_list.back().get()->Select(m_context, page, m_ctm);
-
-		return true;
+		if (dynamic_cast<NullSelection*>(m_selection_list.back().get()) != nullptr) {
+			m_selection_list.pop_back();
+			return false;
+		}
+		else {
+			m_selection_list.back().get()->Select(m_context, page, m_ctm);
+			return true;
+		}
+		
 		//fz_try(m_context) {
 		/*auto sheet = fz_new_stext_sheet(m_context);
 		auto x = nelem(hits);
@@ -293,7 +262,6 @@ namespace MuPdfApi
 
 		std::vector<fz_rect> rects = m_selection_list.back().get()->GetRects();
 
-		mu_rect* r = new mu_rect[num_rects];
 		for (int i = 0; i < num_rects; i++) {
 			(*rectList)[i].x0 = rects[i].x0;
 			(*rectList)[i].y0 = rects[i].y0;
@@ -302,6 +270,21 @@ namespace MuPdfApi
  		}
 
 		return num_rects;
+	}
+
+	int PdfDocument::GetSelectionContents(int index, mu_selection* contentList[], int max) {
+		int num_contents = m_selection_list[index].get()->GetNumSels();
+		num_contents = std::min(num_contents, max);
+
+		std::vector<mu_selection> contents = m_selection_list[index].get()->GetContents();
+
+		for (int i = 0; i < num_contents; i++) {
+			(*contentList)[i].type = contents[i].type;
+			(*contentList)[i].num_bytes = contents[i].num_bytes;
+			(*contentList)[i].content = contents[i].content;
+		}
+
+		return num_contents;
 	}
 
 	int PdfDocument::GetNumSelections() {

@@ -40,12 +40,28 @@ namespace SelectPdf
         public int x1, y1;
     };
 
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainPage : Page
+    enum ContentType {
+        TEXT_CONTENT = 0,
+        IMAGE_CONTENT = 1
+    };
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct MuSelection
+    {
+        [FieldOffset(0)]
+        public int type;
+        [FieldOffset(4)]
+        public int numBytes;
+        [FieldOffset(8)]
+        public IntPtr content;
+    };
+/// <summary>
+/// An empty page that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class MainPage : Page
     {
         private const int MAX_NUM = 1024;
+        private const int MAX_SEL_NUM = 10;
 
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Open(byte[] data, int length);
@@ -72,14 +88,18 @@ namespace SelectPdf
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetCurrentPageNum();
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GotoPage(int page);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GoToNextPage();
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GoToPrevPage();
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern void Dispose(IntPtr pointer);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool AddSelection(MuPoint[] pointList, int size);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetHighlights([MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_NUM)] ref MuRect[] rectList, int size);
@@ -87,6 +107,10 @@ namespace SelectPdf
         public static extern int GetNumSelections();
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetSelectionContent(int index);
+        [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetSelectionContents(int index,
+            [MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_SEL_NUM)] ref MuSelection[] contentList,
+            int size);
 
         private IntPtr currentDocument = IntPtr.Zero;
         private List<MuPoint> pointList = new List<MuPoint>();
@@ -225,9 +249,12 @@ namespace SelectPdf
                 //    // hide currentPage
                 //} else
                 //{
+                pdfCanvas.Children.Clear();
+                pdfContainer.Children.Remove(pdfContainer.FindName("Page" + currentPageNum) as UIElement);
+
+                currentPageNum = updatedPage;
                 Render();
                 //}
-                currentPageNum = updatedPage;
 
             }
             e.Handled = true;
@@ -315,11 +342,63 @@ namespace SelectPdf
             Render();
         }
 
-        private void Selection_Button_Click(object sender, RoutedEventArgs e)
+        private async void Selection_Button_Click(object sender, RoutedEventArgs e)
         {
-            IntPtr text = GetSelectionContent(0);
-            string c = Marshal.PtrToStringAnsi(text);
-            Debug.Write(c);
+            if (selectionContainer.Visibility == Visibility.Collapsed)
+            {
+                selectionContainer.Visibility = Visibility.Visible;
+
+                int numSelections = GetNumSelections();
+
+                for (int i = 0; i < numSelections; i++)
+                {
+                    selectionContainer.RowDefinitions.Add(new RowDefinition());
+                    Grid selectionGrid = new Grid();
+                    Grid.SetRow(selectionGrid, i);
+
+                    MuSelection[] contentList = new MuSelection[MAX_SEL_NUM];
+                    int numContents = GetSelectionContents(i, ref contentList, MAX_SEL_NUM);
+
+                    for (int j = 0; j < numContents; j++)
+                    {
+                        selectionGrid.RowDefinitions.Add(new RowDefinition());
+
+                        if (contentList[j].type == (int)ContentType.IMAGE_CONTENT)
+                        {
+                            IntPtr bytes = contentList[j].content;
+                            byte[] mngdArray = new byte[contentList[j].numBytes];
+                            try
+                            {
+                                Marshal.Copy(bytes, mngdArray, 0, contentList[j].numBytes);
+
+                                var bmp = await ByteArrayToBitmapImage(mngdArray);
+                                var img = new Image();
+                                img.Source = bmp;
+                                Grid.SetRow(img, j);
+                                selectionGrid.Children.Add(img);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex);
+                            }
+                        } else
+                        {
+                            IntPtr bytes = contentList[j].content;
+                            string selText = Marshal.PtrToStringAnsi(bytes);
+                            TextBlock txt = new TextBlock();
+                            txt.Text = selText;
+                            Grid.SetRow(txt, j);
+                            selectionGrid.Children.Add(txt);
+                        }
+                    }
+
+                    selectionContainer.Children.Add(selectionGrid);
+                }
+
+            } else
+            {
+                selectionContainer.Visibility = Visibility.Collapsed;
+            }
 
         }
     }

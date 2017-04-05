@@ -94,3 +94,7 @@ EXPORT_API int GetNumSelections() {
 EXPORT_API char* GetSelectionContent(int index) {
 	return m_doc->GetSelectionContent(index);
 }
+
+EXPORT_API int GetSelectionContents(int index, mu_selection* contentList[], int max) {
+	return m_doc->GetSelectionContents(index, contentList, max);
+}

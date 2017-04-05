@@ -13,6 +13,7 @@
         <Grid x:Name="pdfContainer">
             <Canvas x:Name="pdfCanvas"></Canvas>
         </Grid>
+        <Grid x:Name="selectionContainer" Background="#EDEDED" Height="940" Width="450" Canvas.Top="10" Margin="980,10,10,10" Visibility="Collapsed"/>
     </Grid>
 
 </Page>

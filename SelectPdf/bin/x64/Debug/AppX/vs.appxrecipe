@@ -28,13 +28,13 @@
     <AppXManifest Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-01T22:20:58.176</Modified>
+      <Modified>2017-04-05T18:45:06.245</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.exe">
       <PackagePath>entrypoint\SelectPdf.exe</PackagePath>
-      <Modified>2017-04-01T22:20:56.588</Modified>
+      <Modified>2017-04-05T18:45:05.420</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Microsoft.CSharp\4.0.0\lib\netcore50\Microsoft.CSharp.dll">
       <PackagePath>Microsoft.CSharp.dll</PackagePath>
@@ -458,7 +458,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\mupdftest.dll">
       <PackagePath>mupdftest.dll</PackagePath>
-      <Modified>2017-04-01T22:20:51.012</Modified>
+      <Modified>2017-04-05T18:33:08.485</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Properties\Default.rd.xml">
       <PackagePath>Properties\Default.rd.xml</PackagePath>
@@ -500,7 +500,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.xr.xml">
       <PackagePath>SelectPdf.xr.xml</PackagePath>
-      <Modified>2017-03-26T22:15:19.873</Modified>
+      <Modified>2017-04-05T17:26:55.900</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -509,11 +509,11 @@
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-01T22:20:57.098</Modified>
+      <Modified>2017-04-05T18:40:22.268</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\SelectPdf.exe">
       <PackagePath>SelectPdf.exe</PackagePath>
-      <Modified>2017-04-01T22:20:58.165</Modified>
+      <Modified>2017-04-05T18:45:06.237</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,8 @@
 #include <string>
 #include <memory>
 
+const int STROKE_BUFFER = 40;
+
 class SelectionMatcher
 {
 public:

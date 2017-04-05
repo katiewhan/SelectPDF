@@ -31,12 +31,12 @@ namespace MuPdfApi
 		int GetCurrentPageNum();
 		bool GoToNextPage();
 		bool GoToPrevPage();
-		fz_buffer * png_from_pixmap(fz_context *ctx, fz_pixmap *pix, int drop);
 
 		bool AddSelection(mu_point* pointList, int size);
 		int GetHighlights(mu_rect* rectList[], int max);
 		int GetNumSelections();
 		char* GetSelectionContent(int index); 
+		int GetSelectionContents(int index, mu_selection* contentList[], int max);
 
 	private:
 		fz_context* m_context;

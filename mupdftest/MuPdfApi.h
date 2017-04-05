@@ -47,4 +47,6 @@ extern "C" {
 
 	EXPORT_API char* GetSelectionContent(int index);
 
+	EXPORT_API int GetSelectionContents(int index, mu_selection* contentList[], int max);
+
 } // end of export C block
