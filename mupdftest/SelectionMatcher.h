@@ -12,4 +12,7 @@ public:
 	SelectionMatcher();
 	~SelectionMatcher();
 	std::unique_ptr<Selection> GetSelection(mu_point* pointList, int size, int page);
+
+private:
+	int GetStrokeMetrics(mu_point* pointList, int size);
 };

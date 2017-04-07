@@ -1,21 +1,39 @@
 ﻿  MuPdfApi.cpp
   MuPdfImageUtil.cpp
+  MuPolygon.cpp
   PdfDocument.cpp
+c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(116): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(136): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(117): warning C4101: 'ypre': unreferenced local variable
+c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(118): warning C4101: 'xpre': unreferenced local variable
   SelectionMatcher.cpp
   BracketSelection.cpp
 c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(122): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(192): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
 c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(291): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  LassoSelection.cpp
   LineSelection.cpp
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(62): warning C4305: '=': truncation from 'int' to 'char'
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(62): warning C4309: '=': truncation of constant value
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(112): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   MarqueeSelection.cpp
   NullSelection.cpp
-c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(61): warning C4305: '=': truncation from 'int' to 'char'
-c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(61): warning C4309: '=': truncation of constant value
-c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(111): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-  Selection.cpp
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(45): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(46): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(47): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(48): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(56): warning C4305: '=': truncation from 'int' to 'char'
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(56): warning C4309: '=': truncation of constant value
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(86): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(87): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(88): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(89): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\users\katiehan\documents\mupdftest\mupdftest\selection\lassoselection.cpp(109): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\lineselection.cpp(54): warning C4305: '=': truncation from 'int' to 'char'
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\lineselection.cpp(54): warning C4309: '=': truncation of constant value
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\lineselection.cpp(103): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Selection.cpp
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\marqueeselection.cpp(55): warning C4305: '=': truncation from 'int' to 'char'
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\marqueeselection.cpp(55): warning C4309: '=': truncation of constant value
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\marqueeselection.cpp(104): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data

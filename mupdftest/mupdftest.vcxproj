@@ -189,9 +189,11 @@
   <ItemGroup>
     <ClCompile Include="MuPdfApi.cpp" />
     <ClCompile Include="MuPdfImageUtil.cpp" />
+    <ClCompile Include="MuPolygon.cpp" />
     <ClCompile Include="PdfDocument.cpp" />
     <ClCompile Include="SelectionMatcher.cpp" />
     <ClCompile Include="Selection\BracketSelection.cpp" />
+    <ClCompile Include="Selection\LassoSelection.cpp" />
     <ClCompile Include="Selection\LineSelection.cpp" />
     <ClCompile Include="Selection\MarqueeSelection.cpp" />
     <ClCompile Include="Selection\NullSelection.cpp" />
@@ -201,9 +203,11 @@
     <ClInclude Include="MuPdfApi.h" />
     <ClInclude Include="MuPdfData.h" />
     <ClInclude Include="MuPdfImageUtil.h" />
+    <ClInclude Include="MuPolygon.h" />
     <ClInclude Include="PdfDocument.h" />
     <ClInclude Include="SelectionMatcher.h" />
     <ClInclude Include="Selection\BracketSelection.h" />
+    <ClInclude Include="Selection\LassoSelection.h" />
     <ClInclude Include="Selection\LineSelection.h" />
     <ClInclude Include="Selection\MarqueeSelection.h" />
     <ClInclude Include="Selection\NullSelection.h" />

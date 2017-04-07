@@ -21,6 +21,7 @@ void BracketSelection::Select(fz_context* ctx, fz_stext_page* page, fz_matrix ct
 	for (int block_num = 0; block_num < page->len; block_num++)
 	{
 		if (page->blocks[block_num].type == FZ_PAGE_BLOCK_TEXT) {
+			// select text by line
 			fz_stext_line *line;
 			fz_stext_block *block;
 			fz_stext_span *span;
