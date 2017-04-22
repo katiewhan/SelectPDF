@@ -39,14 +39,14 @@ extern "C" {
 
 	EXPORT_API void Dispose(MuPdfApi::PdfDocument* document);
 
-	EXPORT_API bool AddSelection(mu_point* pointList, int size);
+	EXPORT_API int AddSelection(mu_point* pointList, int size);
 
-	EXPORT_API int GetHighlights(mu_rect* rectList[], int max);
+	EXPORT_API int GetHighlights(int id, mu_rect* rectList[], int max);
 
 	EXPORT_API int GetNumSelections();
 
-	EXPORT_API char* GetSelectionContent(int index);
+	EXPORT_API char* GetSelectionContent(int id);
 
-	EXPORT_API int GetSelectionContents(int index, mu_selection* contentList[], int max);
+	EXPORT_API int GetSelectionContents(int id, mu_selection* contentList[], int max);
 
 } // end of export C block

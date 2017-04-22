@@ -102,16 +102,17 @@ public sealed partial class MainPage : Page
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern void Dispose(IntPtr pointer);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool AddSelection(MuPoint[] pointList, int size);
+        public static extern int AddSelection(MuPoint[] pointList, int size);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetHighlights([MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_NUM)] ref MuRect[] rectList, int size);
+        public static extern int GetHighlights(int id, 
+            [MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_NUM)] ref MuRect[] rectList,
+            int size);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetNumSelections();
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr GetSelectionContent(int index);
+        public static extern IntPtr GetSelectionContent(int id);
         [DllImport("mupdftest", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetSelectionContents(int index,
+        public static extern int GetSelectionContents(int id,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = MAX_SEL_NUM)] ref MuSelection[] contentList,
             int size);
 
@@ -123,8 +124,10 @@ public sealed partial class MainPage : Page
         private CanvasBitmap pdfIm;
         private int width;
 
-        private Dictionary<int, Selection> selectionMap = new Dictionary<int, Selection>(); // map of page number to ???
+        // map of page number to list of selections on that page
+        private Dictionary<int, List<Selection>> selectionMap = new Dictionary<int, List<Selection>>();
 
+        // this is needed for the dll
         private static byte[] file;
 
         public MainPage()
@@ -132,6 +135,11 @@ public sealed partial class MainPage : Page
             this.InitializeComponent();
 
             inkCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+            InkDrawingAttributes inkAttributes = inkCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+            inkAttributes.Size = new Size(10, 5);
+            inkAttributes.Color = Colors.CadetBlue;
+            inkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(inkAttributes);
+
             inkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkCanvas.PointerWheelChanged += new PointerEventHandler(InkCanvas_PointerWheel);
         }
@@ -141,6 +149,8 @@ public sealed partial class MainPage : Page
             var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
             bool result;
             int updatedPage;
+            
+            // determine if scrolling up or down
             if (d < 0)
             {
                 result = GoToNextPage();
@@ -154,7 +164,18 @@ public sealed partial class MainPage : Page
 
             if (result)
             {
+                // update page num
                 currentPageNum = updatedPage;
+                // update highlight list to reflect updated page
+                highlightList.Clear();
+                if (selectionMap.ContainsKey(currentPageNum))
+                {
+                    foreach(Selection s in selectionMap[currentPageNum])
+                    {
+                        highlightList.AddRange(s.GetHighlightRects());
+                    }
+                }
+                // render updated page
                 Render();
             }
             e.Handled = true;
@@ -164,6 +185,7 @@ public sealed partial class MainPage : Page
         {
             List<MuPoint> pointList = new List<MuPoint>();
 
+            // get user stroke points from ink and convert to MuPoint list
             foreach (InkStroke stroke in sender.StrokeContainer.GetStrokes())
             {
                 foreach (InkPoint p in stroke.GetInkPoints())
@@ -171,19 +193,34 @@ public sealed partial class MainPage : Page
                     pointList.Add(GetPdfPoint(p.Position.X, p.Position.Y));
                 }
             }
-            inkCanvas.InkPresenter.StrokeContainer.Clear();
+            inkCanvas.InkPresenter.StrokeContainer.Clear(); // clear the ink from the canvas
 
-            bool selected = AddSelection(pointList.ToArray(), pointList.Count);
+            // add selection to DLL using the list of MuPoints
+            int selected = AddSelection(pointList.ToArray(), pointList.Count);
 
-            if (selected)
+            if (selected > -1)
             {
+                // keep the new selection in the frontend
+                Selection currSel = new Selection(selected, currentPageNum);
+
                 MuRect[] rectList = new MuRect[MAX_NUM];
-                int num = GetHighlights(ref rectList, MAX_NUM);
+                int num = GetHighlights(selected, ref rectList, MAX_NUM);
                 Debug.WriteLine("output" + num);
 
                 for (int k = 0; k < num; k++)
                 {
+                    // add highlight rects to both the selection object and current highlight list
+                    currSel.AddHighlightRect(rectList[k]);
                     highlightList.Add(rectList[k]);
+                }
+
+                // add the new selection to selection map under current page num
+                if (selectionMap.ContainsKey(currentPageNum))
+                {
+                    selectionMap[currentPageNum].Add(currSel);
+                } else
+                {
+                    selectionMap.Add(currentPageNum, new List<Selection> { currSel });
                 }
             }
 
@@ -194,37 +231,10 @@ public sealed partial class MainPage : Page
         {
             double marg = (selectCanvas.ActualWidth - width) / 2;
 
-            //double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
-            //double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
-            //double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
-            //double heightRatio = size / pdf.ActualHeight;
-            //double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
-
             MuPoint point = new MuPoint();
             point.y = Convert.ToInt32(y);
             point.x = Convert.ToInt32(x - marg);
             return point;
-        }
-
-        private void DrawRect(MuRect rect)
-        {
-            var size = (int)selectCanvas.ActualHeight; // size in pixels
-            
-            //double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
-            //double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
-            //double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
-            //double heightRatio = size / pdf.ActualHeight;
-            //double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
-
-            //Rectangle r = new Rectangle();
-            //r.Fill = new SolidColorBrush(Windows.UI.Colors.LightYellow);
-            //r.Fill.Opacity = 0.7;
-            //r.Width = (rect.x1 - rect.x0) / widthRatio;
-            //r.Height = (rect.y1 - rect.y0) / heightRatio;
-            //r.Margin = new Thickness((rect.x0 / widthRatio) + offsetX, (rect.y0 / heightRatio) + offsetY, 0, 0);
-            //pdfCanvas.Children.Add(r);
-            //Canvas.SetZIndex(pdfCanvas, 10);
-
         }
 
         private static async Task LoadFile()
@@ -238,7 +248,6 @@ public sealed partial class MainPage : Page
             {
                 using (var memoryStream = new MemoryStream())
                 {
-
                     stream.CopyTo(memoryStream);
                     file = memoryStream.ToArray();
                 }
@@ -305,22 +314,11 @@ public sealed partial class MainPage : Page
                     pdfIm = await CanvasBitmap.LoadAsync(selectCanvas, stream);
                     selectCanvas.Invalidate();
                 }
-
-                //var bmp = await ByteArrayToBitmapImage(mngdArray, false);
-                //var img = new Image();
-                //img.Source = bmp;
-                //img.Name = "Page" + currentPageNum;
-                //pdfContainer.Children.Add(img);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
             }
-            //finally
-            //{
-            //    // Free up memory used by active pdf document
-            //    Dispose(currentDocument);
-            //}
         }
 
         private async void Load_Button_Click(object sender, RoutedEventArgs e)
@@ -414,9 +412,7 @@ public sealed partial class MainPage : Page
 
             //Clipboard.SetContent(dataPackage);
 
-
-
-
+            
             await LoadFile();
 
             currentDocument = Open(file, file.Length);

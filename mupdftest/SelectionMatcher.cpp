@@ -23,12 +23,12 @@ std::unique_ptr<Selection> SelectionMatcher::GetSelection(mu_point* pointList, i
 	int y_delta = std::abs(pointList[size - 1].y - pointList[0].y);
 	int x_delta = std::abs(pointList[size - 1].x - pointList[0].x);
 
-	if (y_delta < (STROKE_BUFFER / 4) && x_delta < (STROKE_BUFFER / 4)) {
-		return std::make_unique<NullSelection>();
-	}
-	else if (GetStrokeMetrics(pointList, size) > (STROKE_BUFFER * 2)) {
+	if (GetStrokeMetrics(pointList, size) > (STROKE_BUFFER * 2)) {
 		std::vector<mu_point> points(pointList, pointList + size);
 		return std::make_unique<LassoSelection>(points, page);
+	}
+	else if (y_delta < (STROKE_BUFFER / 4) && x_delta < (STROKE_BUFFER / 4)) {
+		return std::make_unique<NullSelection>();
 	}
 	else if (y_delta < STROKE_BUFFER) { // end y - start y
 		int avg_y = 0;

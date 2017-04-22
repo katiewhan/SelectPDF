@@ -28,13 +28,13 @@
     <AppXManifest Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-22T17:48:31.042</Modified>
+      <Modified>2017-04-22T19:32:37.764</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.exe">
       <PackagePath>entrypoint\SelectPdf.exe</PackagePath>
-      <Modified>2017-04-22T17:48:30.593</Modified>
+      <Modified>2017-04-22T19:32:37.397</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Microsoft.CSharp\4.0.0\lib\netcore50\Microsoft.CSharp.dll">
       <PackagePath>Microsoft.CSharp.dll</PackagePath>
@@ -458,7 +458,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\mupdftest.dll">
       <PackagePath>mupdftest.dll</PackagePath>
-      <Modified>2017-04-07T21:25:15.723</Modified>
+      <Modified>2017-04-22T19:20:12.192</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Properties\Default.rd.xml">
       <PackagePath>Properties\Default.rd.xml</PackagePath>
@@ -509,11 +509,11 @@
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-22T17:44:50.694</Modified>
+      <Modified>2017-04-22T19:20:15.767</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\SelectPdf.exe">
       <PackagePath>SelectPdf.exe</PackagePath>
-      <Modified>2017-04-22T17:48:31.032</Modified>
+      <Modified>2017-04-22T19:32:37.754</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

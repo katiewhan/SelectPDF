@@ -19,5 +19,14 @@ namespace SelectPdf
             this.pageNum = page;
         }
 
+        public void AddHighlightRect(MuRect rect)
+        {
+            highlights.Add(rect);
+        }
+
+        public List<MuRect> GetHighlightRects()
+        {
+            return highlights;
+        }
     }
 }

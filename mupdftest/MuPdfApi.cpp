@@ -63,11 +63,11 @@ EXPORT_API void Dispose(MuPdfApi::PdfDocument* document) {
 	delete document;
 }
 
-EXPORT_API bool AddSelection(mu_point* pointList, int size) {
+EXPORT_API int AddSelection(mu_point* pointList, int size) {
 	return m_doc->AddSelection(pointList, size);
 }
 
-EXPORT_API int GetHighlights(mu_rect* rectList[], int max) {
+EXPORT_API int GetHighlights(int id, mu_rect* rectList[], int max) {
 	/*mu_rect* r = new mu_rect[1];
 	r[0].x0 = 1;
 	r[0].x1 = 2;
@@ -84,17 +84,17 @@ EXPORT_API int GetHighlights(mu_rect* rectList[], int max) {
 	//(*rectList)[3] = 5;
 	//(*rectList)[4] = 6;
 	//return 1;
-	return m_doc->GetHighlights(rectList, max);
+	return m_doc->GetHighlights(id, rectList, max);
 }
 
 EXPORT_API int GetNumSelections() {
 	return m_doc->GetNumSelections();
 }
 
-EXPORT_API char* GetSelectionContent(int index) {
-	return m_doc->GetSelectionContent(index);
+EXPORT_API char* GetSelectionContent(int id) {
+	return m_doc->GetSelectionContent(id);
 }
 
-EXPORT_API int GetSelectionContents(int index, mu_selection* contentList[], int max) {
-	return m_doc->GetSelectionContents(index, contentList, max);
+EXPORT_API int GetSelectionContents(int id, mu_selection* contentList[], int max) {
+	return m_doc->GetSelectionContents(id, contentList, max);
 }

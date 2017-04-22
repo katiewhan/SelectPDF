@@ -18,8 +18,9 @@ namespace MuPdfApi
 		m_document = nullptr;
 		m_context = nullptr;
 		m_current_page_num = -1;
+		m_current_sel_id = -1;
 
-		m_selection = std::make_unique<SelectionMatcher>();
+		m_sel_matcher = std::make_unique<SelectionMatcher>();
 
 		fz_var(m_buffer);
 		fz_var(m_pixmap);
@@ -196,7 +197,7 @@ namespace MuPdfApi
 		return m_buffer->data;
 	}
 
-	bool PdfDocument::AddSelection(mu_point* pointList, int size) {
+	int PdfDocument::AddSelection(mu_point* pointList, int size) {
 		if (size <= 0) {
 			return false;
 		}
@@ -213,14 +214,14 @@ namespace MuPdfApi
 
 		fz_run_page(m_context, m_current_page, dev, &m_ctm, NULL);
 
-		m_selection_list.push_back(m_selection->GetSelection(pointList, size, m_current_page_num));
-		if (dynamic_cast<NullSelection*>(m_selection_list.back().get()) != nullptr) {
-			m_selection_list.pop_back();
-			return false;
+		m_selection_map[++m_current_sel_id] = m_sel_matcher->GetSelection(pointList, size, m_current_page_num);
+		if (dynamic_cast<NullSelection*>(m_selection_map[m_current_sel_id].get()) != nullptr) {
+			m_selection_map.erase(m_current_sel_id);
+			return -1;
 		}
 		else {
-			m_selection_list.back().get()->Select(m_context, page, m_ctm);
-			return true;
+			m_selection_map[m_current_sel_id].get()->Select(m_context, page, m_ctm);
+			return m_current_sel_id;
 		}
 		
 		//fz_try(m_context) {
@@ -256,11 +257,11 @@ namespace MuPdfApi
 
 	}
 
-	int PdfDocument::GetHighlights(mu_rect* rectList[], int max) {
-		int num_rects = m_selection_list.back().get()->GetNumRects();
+	int PdfDocument::GetHighlights(int id, mu_rect* rectList[], int max) {
+		int num_rects = m_selection_map[id].get()->GetNumRects();
 		num_rects = std::min(num_rects, max);
 
-		std::vector<fz_rect> rects = m_selection_list.back().get()->GetRects();
+		std::vector<fz_rect> rects = m_selection_map[id].get()->GetRects();
 
 		for (int i = 0; i < num_rects; i++) {
 			(*rectList)[i].x0 = rects[i].x0;
@@ -272,11 +273,11 @@ namespace MuPdfApi
 		return num_rects;
 	}
 
-	int PdfDocument::GetSelectionContents(int index, mu_selection* contentList[], int max) {
-		int num_contents = m_selection_list[index].get()->GetNumSels();
+	int PdfDocument::GetSelectionContents(int id, mu_selection* contentList[], int max) {
+		int num_contents = m_selection_map[id].get()->GetNumSels();
 		num_contents = std::min(num_contents, max);
 
-		std::vector<mu_selection> contents = m_selection_list[index].get()->GetContents();
+		std::vector<mu_selection> contents = m_selection_map[id].get()->GetContents();
 
 		for (int i = 0; i < num_contents; i++) {
 			(*contentList)[i].type = contents[i].type;
@@ -288,10 +289,10 @@ namespace MuPdfApi
 	}
 
 	int PdfDocument::GetNumSelections() {
-		return m_selection_list.size();
+		return m_selection_map.size();
 	}
 
-	char* PdfDocument::GetSelectionContent(int index) {
-		return m_selection_list[index].get()->GetText();
+	char* PdfDocument::GetSelectionContent(int id) {
+		return m_selection_map[id].get()->GetText();
 	}
 }

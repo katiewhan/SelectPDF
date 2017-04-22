@@ -9,9 +9,9 @@ c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(117): warning C410
 c:\users\katiehan\documents\mupdftest\mupdftest\mupolygon.cpp(118): warning C4101: 'xpre': unreferenced local variable
   SelectionMatcher.cpp
   BracketSelection.cpp
-c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(122): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(192): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(291): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(123): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(193): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\katiehan\documents\mupdftest\mupdftest\pdfdocument.cpp(292): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
   LassoSelection.cpp
   LineSelection.cpp
 c:\users\katiehan\documents\mupdftest\mupdftest\selection\bracketselection.cpp(62): warning C4305: '=': truncation from 'int' to 'char'

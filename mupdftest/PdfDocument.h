@@ -8,7 +8,7 @@ extern "C" {
 #include "MuPdfData.h"
 #include "Selection\Selection.h"
 #include "SelectionMatcher.h"
-#include <vector>
+#include <map>
 #include <memory>
 
 namespace MuPdfApi
@@ -32,11 +32,11 @@ namespace MuPdfApi
 		bool GoToNextPage();
 		bool GoToPrevPage();
 
-		bool AddSelection(mu_point* pointList, int size);
-		int GetHighlights(mu_rect* rectList[], int max);
+		int AddSelection(mu_point* pointList, int size);
+		int GetHighlights(int id, mu_rect* rectList[], int max);
 		int GetNumSelections();
-		char* GetSelectionContent(int index); 
-		int GetSelectionContents(int index, mu_selection* contentList[], int max);
+		char* GetSelectionContent(int id); 
+		int GetSelectionContents(int id, mu_selection* contentList[], int max);
 
 	private:
 		fz_context* m_context;
@@ -49,8 +49,9 @@ namespace MuPdfApi
 		int m_current_page_num;
 		fz_matrix m_ctm;
 
-		std::unique_ptr<SelectionMatcher> m_selection;
-		std::vector<std::unique_ptr<Selection>> m_selection_list;
+		std::unique_ptr<SelectionMatcher> m_sel_matcher;
+		std::map<int, std::unique_ptr<Selection>> m_selection_map;
+		int m_current_sel_id;
 		
 	};
 }
