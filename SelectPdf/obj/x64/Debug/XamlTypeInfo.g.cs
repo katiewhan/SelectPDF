@@ -132,15 +132,31 @@ namespace SelectPdf.SelectPdf_XamlTypeInfo
 
         private void InitTypeTables()
         {
-            _typeNameTable = new string[3];
-            _typeNameTable[0] = "SelectPdf.MainPage";
-            _typeNameTable[1] = "Windows.UI.Xaml.Controls.Page";
-            _typeNameTable[2] = "Windows.UI.Xaml.Controls.UserControl";
+            _typeNameTable = new string[11];
+            _typeNameTable[0] = "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl";
+            _typeNameTable[1] = "Windows.UI.Xaml.Controls.UserControl";
+            _typeNameTable[2] = "Microsoft.Graphics.Canvas.CanvasDevice";
+            _typeNameTable[3] = "Object";
+            _typeNameTable[4] = "Single";
+            _typeNameTable[5] = "Boolean";
+            _typeNameTable[6] = "Windows.UI.Color";
+            _typeNameTable[7] = "System.ValueType";
+            _typeNameTable[8] = "Windows.Foundation.Size";
+            _typeNameTable[9] = "SelectPdf.MainPage";
+            _typeNameTable[10] = "Windows.UI.Xaml.Controls.Page";
 
-            _typeTable = new global::System.Type[3];
-            _typeTable[0] = typeof(global::SelectPdf.MainPage);
-            _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.Page);
-            _typeTable[2] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
+            _typeTable = new global::System.Type[11];
+            _typeTable[0] = typeof(global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl);
+            _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
+            _typeTable[2] = typeof(global::Microsoft.Graphics.Canvas.CanvasDevice);
+            _typeTable[3] = typeof(global::System.Object);
+            _typeTable[4] = typeof(global::System.Single);
+            _typeTable[5] = typeof(global::System.Boolean);
+            _typeTable[6] = typeof(global::Windows.UI.Color);
+            _typeTable[7] = typeof(global::System.ValueType);
+            _typeTable[8] = typeof(global::Windows.Foundation.Size);
+            _typeTable[9] = typeof(global::SelectPdf.MainPage);
+            _typeTable[10] = typeof(global::Windows.UI.Xaml.Controls.Page);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -175,7 +191,9 @@ namespace SelectPdf.SelectPdf_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_MainPage() { return new global::SelectPdf.MainPage(); }
+        private object Activate_0_CanvasControl() { return new global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl(); }
+        private object Activate_2_CanvasDevice() { return new global::Microsoft.Graphics.Canvas.CanvasDevice(); }
+        private object Activate_9_MainPage() { return new global::SelectPdf.MainPage(); }
 
         private global::Windows.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
@@ -187,18 +205,66 @@ namespace SelectPdf.SelectPdf_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 0:   //  SelectPdf.MainPage
+            case 0:   //  Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl
+                userType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_0_CanvasControl;
+                userType.AddMemberName("Device");
+                userType.AddMemberName("Dpi");
+                userType.AddMemberName("UseSharedDevice");
+                userType.AddMemberName("ForceSoftwareRenderer");
+                userType.AddMemberName("DpiScale");
+                userType.AddMemberName("CustomDevice");
+                userType.AddMemberName("ClearColor");
+                userType.AddMemberName("ReadyToDraw");
+                userType.AddMemberName("Size");
+                xamlType = userType;
+                break;
+
+            case 1:   //  Windows.UI.Xaml.Controls.UserControl
+                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 2:   //  Microsoft.Graphics.Canvas.CanvasDevice
+                userType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 3:   //  Object
+                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 4:   //  Single
+                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 5:   //  Boolean
+                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 6:   //  Windows.UI.Color
+                userType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 7:   //  System.ValueType
+                userType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                xamlType = userType;
+                break;
+
+            case 8:   //  Windows.Foundation.Size
+                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 9:   //  SelectPdf.MainPage
                 userType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_0_MainPage;
+                userType.Activator = Activate_9_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 1:   //  Windows.UI.Xaml.Controls.Page
-                xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 2:   //  Windows.UI.Xaml.Controls.UserControl
+            case 10:   //  Windows.UI.Xaml.Controls.Page
                 xamlType = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
             }
@@ -206,11 +272,139 @@ namespace SelectPdf.SelectPdf_XamlTypeInfo
         }
 
 
+        private object get_0_CanvasControl_Device(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.Device;
+        }
+        private object get_1_CanvasControl_Dpi(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.Dpi;
+        }
+        private object get_2_CanvasControl_UseSharedDevice(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.UseSharedDevice;
+        }
+        private void set_2_CanvasControl_UseSharedDevice(object instance, object Value)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            that.UseSharedDevice = (global::System.Boolean)Value;
+        }
+        private object get_3_CanvasControl_ForceSoftwareRenderer(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.ForceSoftwareRenderer;
+        }
+        private void set_3_CanvasControl_ForceSoftwareRenderer(object instance, object Value)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            that.ForceSoftwareRenderer = (global::System.Boolean)Value;
+        }
+        private object get_4_CanvasControl_DpiScale(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.DpiScale;
+        }
+        private void set_4_CanvasControl_DpiScale(object instance, object Value)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            that.DpiScale = (global::System.Single)Value;
+        }
+        private object get_5_CanvasControl_CustomDevice(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.CustomDevice;
+        }
+        private void set_5_CanvasControl_CustomDevice(object instance, object Value)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            that.CustomDevice = (global::Microsoft.Graphics.Canvas.CanvasDevice)Value;
+        }
+        private object get_6_CanvasControl_ClearColor(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.ClearColor;
+        }
+        private void set_6_CanvasControl_ClearColor(object instance, object Value)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            that.ClearColor = (global::Windows.UI.Color)Value;
+        }
+        private object get_7_CanvasControl_ReadyToDraw(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.ReadyToDraw;
+        }
+        private object get_8_CanvasControl_Size(object instance)
+        {
+            var that = (global::Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl)instance;
+            return that.Size;
+        }
 
         private global::Windows.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
         {
             global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember xamlMember = null;
-            // No Local Properties
+            global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType userType;
+
+            switch (longMemberName)
+            {
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.Device":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "Device", "Microsoft.Graphics.Canvas.CanvasDevice");
+                xamlMember.Getter = get_0_CanvasControl_Device;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.Dpi":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "Dpi", "Single");
+                xamlMember.Getter = get_1_CanvasControl_Dpi;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.UseSharedDevice":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "UseSharedDevice", "Boolean");
+                xamlMember.Getter = get_2_CanvasControl_UseSharedDevice;
+                xamlMember.Setter = set_2_CanvasControl_UseSharedDevice;
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.ForceSoftwareRenderer":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "ForceSoftwareRenderer", "Boolean");
+                xamlMember.Getter = get_3_CanvasControl_ForceSoftwareRenderer;
+                xamlMember.Setter = set_3_CanvasControl_ForceSoftwareRenderer;
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.DpiScale":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "DpiScale", "Single");
+                xamlMember.Getter = get_4_CanvasControl_DpiScale;
+                xamlMember.Setter = set_4_CanvasControl_DpiScale;
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.CustomDevice":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "CustomDevice", "Microsoft.Graphics.Canvas.CanvasDevice");
+                xamlMember.Getter = get_5_CanvasControl_CustomDevice;
+                xamlMember.Setter = set_5_CanvasControl_CustomDevice;
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.ClearColor":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "ClearColor", "Windows.UI.Color");
+                xamlMember.Getter = get_6_CanvasControl_ClearColor;
+                xamlMember.Setter = set_6_CanvasControl_ClearColor;
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.ReadyToDraw":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "ReadyToDraw", "Boolean");
+                xamlMember.Getter = get_7_CanvasControl_ReadyToDraw;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl.Size":
+                userType = (global::SelectPdf.SelectPdf_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl");
+                xamlMember = new global::SelectPdf.SelectPdf_XamlTypeInfo.XamlMember(this, "Size", "Windows.Foundation.Size");
+                xamlMember.Getter = get_8_CanvasControl_Size;
+                xamlMember.SetIsReadOnly();
+                break;
+            }
             return xamlMember;
         }
     }

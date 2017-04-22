@@ -5,14 +5,22 @@
     xmlns:local="using:SelectPdf"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    Unloaded="Page_Unloaded"
     mc:Ignorable="d">
 
     <Grid x:Name="xBackground" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button Content="Load File" Click="Load_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30"></Button>
-        <Button Content="Selections" Click="Selection_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30,10,30,80"></Button>
-        <Grid x:Name="pdfContainer">
-            <Canvas x:Name="pdfCanvas"></Canvas>
-        </Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <canvas:CanvasControl Grid.Column="0" x:Name="selectCanvas" Draw="selectCanvas_Draw"/>
+        <InkCanvas Grid.Column="0" x:Name="inkCanvas"/>
+
+        <Button Grid.Column="1" Content="Load File" Click="Load_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30"></Button>
+        <Button Grid.Column="1" Content="Selections" Click="Selection_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30,10,30,80"></Button>
         <Grid x:Name="selectionContainer" Background="#EDEDED" Height="940" Width="450" Canvas.Top="10" Margin="980,10,10,10" Visibility="Collapsed"/>
     </Grid>
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Graphics.Canvas;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,12 +9,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI.Input;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,8 +27,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+using Windows.UI.Core;
+using Windows.UI;
+using Windows.UI.Input.Inking.Core;
 
 namespace SelectPdf
 {
@@ -55,9 +60,7 @@ namespace SelectPdf
         [FieldOffset(8)]
         public IntPtr content;
     };
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
+
 public sealed partial class MainPage : Page
     {
         private const int MAX_NUM = 1024;
@@ -113,9 +116,14 @@ public sealed partial class MainPage : Page
             int size);
 
         private IntPtr currentDocument = IntPtr.Zero;
-        private List<MuPoint> pointList = new List<MuPoint>();
-        private bool selecting = false;
         private int currentPageNum = -1;
+        private RichEditBox currentRtf = new RichEditBox();
+
+        private List<MuRect> highlightList = new List<MuRect>();
+        private CanvasBitmap pdfIm;
+        private int width;
+
+        private Dictionary<int, Selection> selectionMap = new Dictionary<int, Selection>(); // map of page number to ???
 
         private static byte[] file;
 
@@ -123,110 +131,12 @@ public sealed partial class MainPage : Page
         {
             this.InitializeComponent();
 
-            pdfContainer.PointerPressed += new PointerEventHandler(pdfContainer_PointerPressed);
-            pdfContainer.PointerReleased += new PointerEventHandler(pdfContainer_PointerReleased);
-            pdfContainer.PointerMoved += new PointerEventHandler(pdfContainer_PointerMoved);
-
-            pdfContainer.PointerWheelChanged += new PointerEventHandler(pdfContainer_PointerWheel);
+            inkCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+            inkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+            inkCanvas.PointerWheelChanged += new PointerEventHandler(InkCanvas_PointerWheel);
         }
 
-        private MuPoint GetPdfPoint(double x, double y)
-        {
-            double size = 2000; // size in pixels
-
-            Image pdf = new Image();
-            foreach(Image o in pdfContainer.Children.OfType<Image>())
-            {
-                pdf = o;
-            }
-            double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
-            double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
-            double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
-            double heightRatio = size / pdf.ActualHeight;
-            double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
-
-            MuPoint point = new MuPoint();
-            point.y = Convert.ToInt32((y - offsetY) * heightRatio);
-            point.x = Convert.ToInt32((x - offsetX) * widthRatio);
-            return point;
-        }
-
-        private void DrawRect(MuRect rect)
-        {
-            double size = 2000; // size in pixels
-
-            Image pdf = new Image();
-            foreach (Image o in pdfContainer.Children.OfType<Image>())
-            {
-                pdf = o;
-            } // get currentPage
-            double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
-            double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
-            double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
-            double heightRatio = size / pdf.ActualHeight;
-            double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
-
-            Rectangle r = new Rectangle();
-            r.Fill = new SolidColorBrush(Windows.UI.Colors.LightYellow);
-            r.Fill.Opacity = 0.7;
-            r.Width = (rect.x1 - rect.x0) / widthRatio;
-            r.Height = (rect.y1 - rect.y0) / heightRatio;
-            r.Margin = new Thickness((rect.x0 / widthRatio) + offsetX, (rect.y0 / heightRatio) + offsetY, 0, 0);
-            pdfCanvas.Children.Add(r);
-            Canvas.SetZIndex(pdfCanvas, 10);
-
-        }
-
-        private void pdfContainer_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (pdfContainer.Children.Count > 1 )
-            {
-                var p = e.GetCurrentPoint(sender as UIElement).Position;
-                pointList.Add(GetPdfPoint(p.X, p.Y));
-                selecting = true;
-            }
-
-            e.Handled = true;
-        }
-
-        private void pdfContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {   
-            bool selected = AddSelection(pointList.ToArray(), pointList.Count);
-            Debug.WriteLine(selected);
-            
-            if (selected)
-            {
-                MuRect[] rectList = new MuRect[MAX_NUM];
-                int num = GetHighlights(ref rectList, MAX_NUM);
-                //var r = Marshal.PtrToStructure<FzRect>(ptr);
-                //string c = Marshal.PtrToStringAnsi(output);
-                //Marshal.FreeHGlobal(output);
-                Debug.WriteLine("output");
-                Debug.WriteLine(num);
-
-                for (int k = 0; k < num; k++)
-                {
-                    //MuRect t = rectList[k];
-                    DrawRect(rectList[k]);
-                }
-            }
-
-            pointList.Clear();
-            selecting = false;
-            e.Handled = true;
-        }
-
-        private void pdfContainer_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            if (selecting && pdfContainer.Children.Count > 1)
-            {
-                var p = e.GetCurrentPoint(sender as UIElement).Position;
-                pointList.Add(GetPdfPoint(p.X, p.Y));
-            }
-            e.Handled = true;
-        }
-
-        private void pdfContainer_PointerWheel(object sender, PointerRoutedEventArgs e)
+        private void InkCanvas_PointerWheel(object sender, PointerRoutedEventArgs e)
         {
             var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
             bool result;
@@ -235,7 +145,8 @@ public sealed partial class MainPage : Page
             {
                 result = GoToNextPage();
                 updatedPage = currentPageNum + 1;
-            } else
+            }
+            else
             {
                 result = GoToPrevPage();
                 updatedPage = currentPageNum - 1;
@@ -243,21 +154,77 @@ public sealed partial class MainPage : Page
 
             if (result)
             {
-                //if (currentPageNum <= pdfContainer.Children.Count)
-                //{
-                //    // show updatedPage
-                //    // hide currentPage
-                //} else
-                //{
-                pdfCanvas.Children.Clear();
-                pdfContainer.Children.Remove(pdfContainer.FindName("Page" + currentPageNum) as UIElement);
-
                 currentPageNum = updatedPage;
                 Render();
-                //}
-
             }
             e.Handled = true;
+        }
+
+        private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
+        {
+            List<MuPoint> pointList = new List<MuPoint>();
+
+            foreach (InkStroke stroke in sender.StrokeContainer.GetStrokes())
+            {
+                foreach (InkPoint p in stroke.GetInkPoints())
+                {
+                    pointList.Add(GetPdfPoint(p.Position.X, p.Position.Y));
+                }
+            }
+            inkCanvas.InkPresenter.StrokeContainer.Clear();
+
+            bool selected = AddSelection(pointList.ToArray(), pointList.Count);
+
+            if (selected)
+            {
+                MuRect[] rectList = new MuRect[MAX_NUM];
+                int num = GetHighlights(ref rectList, MAX_NUM);
+                Debug.WriteLine("output" + num);
+
+                for (int k = 0; k < num; k++)
+                {
+                    highlightList.Add(rectList[k]);
+                }
+            }
+
+            selectCanvas.Invalidate();
+        }
+
+        private MuPoint GetPdfPoint(double x, double y)
+        {
+            double marg = (selectCanvas.ActualWidth - width) / 2;
+
+            //double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
+            //double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
+            //double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
+            //double heightRatio = size / pdf.ActualHeight;
+            //double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
+
+            MuPoint point = new MuPoint();
+            point.y = Convert.ToInt32(y);
+            point.x = Convert.ToInt32(x - marg);
+            return point;
+        }
+
+        private void DrawRect(MuRect rect)
+        {
+            var size = (int)selectCanvas.ActualHeight; // size in pixels
+            
+            //double offsetY = (pdfContainer.ActualHeight - pdf.ActualHeight) / 2.0;
+            //double offsetX = (pdfContainer.ActualWidth - pdf.ActualWidth) / 2.0;
+            //double aspectRatio = pdf.ActualWidth / pdf.ActualHeight;
+            //double heightRatio = size / pdf.ActualHeight;
+            //double widthRatio = (size * aspectRatio) / pdf.ActualWidth;
+
+            //Rectangle r = new Rectangle();
+            //r.Fill = new SolidColorBrush(Windows.UI.Colors.LightYellow);
+            //r.Fill.Opacity = 0.7;
+            //r.Width = (rect.x1 - rect.x0) / widthRatio;
+            //r.Height = (rect.y1 - rect.y0) / heightRatio;
+            //r.Margin = new Thickness((rect.x0 / widthRatio) + offsetX, (rect.y0 / heightRatio) + offsetY, 0, 0);
+            //pdfCanvas.Children.Add(r);
+            //Canvas.SetZIndex(pdfCanvas, 10);
+
         }
 
         private static async Task LoadFile()
@@ -278,7 +245,7 @@ public sealed partial class MainPage : Page
             }
         }
 
-        private static async Task<BitmapImage> ByteArrayToBitmapImage(byte[] byteArray)
+        private async Task<BitmapImage> ByteArrayToBitmapImage(byte[] byteArray, bool addToRtf)
         {
             if (byteArray != null)
             {
@@ -288,7 +255,25 @@ public sealed partial class MainPage : Page
                     var image = new BitmapImage();
                     stream.Seek(0);
                     image.SetSource(stream);
+                    if (addToRtf)
+                    {
+                        currentRtf.Document.Selection.InsertImage(image.PixelWidth, image.PixelHeight, 0, Windows.UI.Text.VerticalCharacterAlignment.Baseline, "Image", stream);
+                    }
                     return image;
+                }
+            }
+            return null;
+        }
+
+        private async Task<RandomAccessStreamReference> ByteArrayToStreamRef(byte[] byteArray)
+        {
+            if (byteArray != null)
+            {
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await stream.WriteAsync(byteArray.AsBuffer());
+
+                    return RandomAccessStreamReference.CreateFromStream(stream);
                 }
             }
             return null;
@@ -300,8 +285,9 @@ public sealed partial class MainPage : Page
             var aspectRatio = GetPageWidth() / (double)GetPageHeight();
 
             // Render the Page
-            var size = 2000; // size in pixels
-            var numBytes = RenderPage((int)(size * aspectRatio), size);
+            var size = (int)selectCanvas.ActualHeight; // size in pixels
+            width = (int)(size * aspectRatio);
+            var numBytes = RenderPage(width, size);
 
             // Get a reference to the buffer that contains the rendererd page
             var buffer = GetBuffer();
@@ -313,11 +299,18 @@ public sealed partial class MainPage : Page
             {
                 Marshal.Copy(buffer, mngdArray, 0, numBytes);
 
-                var bmp = await ByteArrayToBitmapImage(mngdArray);
-                var img = new Image();
-                img.Source = bmp;
-                img.Name = "Page" + currentPageNum;
-                pdfContainer.Children.Add(img);
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await stream.WriteAsync(mngdArray.AsBuffer());
+                    pdfIm = await CanvasBitmap.LoadAsync(selectCanvas, stream);
+                    selectCanvas.Invalidate();
+                }
+
+                //var bmp = await ByteArrayToBitmapImage(mngdArray, false);
+                //var img = new Image();
+                //img.Source = bmp;
+                //img.Name = "Page" + currentPageNum;
+                //pdfContainer.Children.Add(img);
             }
             catch (Exception ex)
             {
@@ -332,6 +325,97 @@ public sealed partial class MainPage : Page
 
         private async void Load_Button_Click(object sender, RoutedEventArgs e)
         {
+            //var dataPackageView = Clipboard.GetContent();
+            //if (dataPackageView.Contains(StandardDataFormats.Text))
+            //{
+            //    try
+            //    {
+            //        var text = await dataPackageView.GetTextAsync();
+            //        Debug.WriteLine(text);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //    }
+            //}
+            //if (dataPackageView.Contains(StandardDataFormats.Bitmap))
+            //{
+            //    Debug.WriteLine("bitmap");
+            //}
+            //if (dataPackageView.Contains(StandardDataFormats.Html))
+            //{
+            //    Debug.WriteLine("html");
+            //}
+            //if (dataPackageView.Contains(StandardDataFormats.Rtf))
+            //{
+            //    var r = await dataPackageView.GetRtfAsync();
+            //    Debug.WriteLine("rtf");
+            //    Debug.WriteLine(r);
+            //}
+            //if (dataPackageView.Contains(StandardDataFormats.StorageItems))
+            //{
+            //    Debug.WriteLine("storage items");
+            //}
+            //if (dataPackageView.Contains(StandardDataFormats.Uri))
+            //{
+            //    Debug.WriteLine("uri");
+            //}
+
+            //var dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
+            ////dataPackage.SetData("AnsiText", "cry");
+
+            //var imagePicker = new FileOpenPicker
+
+            //{
+
+            //    ViewMode = PickerViewMode.Thumbnail,
+
+            //    SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+
+            //    FileTypeFilter = { ".jpg", ".png", ".bmp", ".gif", ".tif" }
+
+            //};
+
+            //string cu;
+            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.None, out cu);
+            //sad.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, cu + "omg so sad");
+
+            //var imageFile = await imagePicker.PickSingleFileAsync();
+            //string content;
+
+            //using (IRandomAccessStream stream = await imageFile.OpenAsync(FileAccessMode.Read))
+            //{
+            //    BitmapImage image = new BitmapImage();
+            //    await image.SetSourceAsync(stream);
+            //    sad.Document.Selection.InsertImage(image.PixelWidth, image.PixelHeight, 0, Windows.UI.Text.VerticalCharacterAlignment.Baseline, "Image", stream);
+            //}
+
+            //string cu2;
+            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out cu2);
+            //Debug.WriteLine(cu2);
+            //sad.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, cu2 + "more text");
+
+
+            // Ask for RTF here, if desired.
+            //string temp;
+            // Do not ask for RTF here, we just want the raw text
+            //sad.Document.GetText(Windows.UI.Text.TextGetOptions.None, out temp);
+            //var range = sad.Document.GetRange(0, temp.Length - 1);
+
+            // Ask for RTF here, if desired.
+            //range.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
+            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
+
+            //dataPackage.SetRtf(content);
+            //Debug.WriteLine("here");
+            //Debug.WriteLine(content);
+            //Clipboard.SetContent(dataPackage);
+
+            //dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(imageFile));
+
+            //Clipboard.SetContent(dataPackage);
+
+
+
 
             await LoadFile();
 
@@ -359,6 +443,9 @@ public sealed partial class MainPage : Page
                     MuSelection[] contentList = new MuSelection[MAX_SEL_NUM];
                     int numContents = GetSelectionContents(i, ref contentList, MAX_SEL_NUM);
 
+                    string selectionText = "";
+                    RandomAccessStreamReference selectionImage = null;
+
                     for (int j = 0; j < numContents; j++)
                     {
                         selectionGrid.RowDefinitions.Add(new RowDefinition());
@@ -371,7 +458,8 @@ public sealed partial class MainPage : Page
                             {
                                 Marshal.Copy(bytes, mngdArray, 0, contentList[j].numBytes);
 
-                                var bmp = await ByteArrayToBitmapImage(mngdArray);
+                                var bmp = await ByteArrayToBitmapImage(mngdArray, true);
+                                selectionImage = await ByteArrayToStreamRef(mngdArray);
                                 var img = new Image();
                                 img.Source = bmp;
                                 Grid.SetRow(img, j);
@@ -385,12 +473,29 @@ public sealed partial class MainPage : Page
                         {
                             IntPtr bytes = contentList[j].content;
                             string selText = Marshal.PtrToStringAnsi(bytes);
+                            selectionText += selText;
                             TextBlock txt = new TextBlock();
                             txt.Text = selText;
                             Grid.SetRow(txt, j);
                             selectionGrid.Children.Add(txt);
                         }
                     }
+
+                    currentRtf.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, selectionText);
+
+                    string temp, content;
+                    currentRtf.Document.GetText(Windows.UI.Text.TextGetOptions.None, out temp);
+                    var range = currentRtf.Document.GetRange(0, temp.Length - 1);
+                    range.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
+
+                    var dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
+                    dataPackage.SetRtf(content);
+                    dataPackage.SetText(selectionText);
+                    if (selectionImage != null)
+                    {
+                        dataPackage.SetBitmap(selectionImage);
+                    }
+                    Clipboard.SetContent(dataPackage);
 
                     selectionContainer.Children.Add(selectionGrid);
                 }
@@ -401,5 +506,29 @@ public sealed partial class MainPage : Page
             }
 
         }
+
+        private void selectCanvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args)
+        {
+            if (pdfIm != null)
+            {
+                int marg = (int)((selectCanvas.ActualWidth - width) / 2);
+                args.DrawingSession.DrawImage(pdfIm, marg, 0);
+
+                if (highlightList.Count > 0)
+                {
+                    foreach (MuRect rect in highlightList)
+                    {
+                        args.DrawingSession.DrawRectangle(rect.x0 + marg, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0, Colors.Red);
+                    }
+                }
+            }
+        }
+
+        void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            selectCanvas.RemoveFromVisualTree();
+            selectCanvas = null;
+        }
+        
     }
 }
