@@ -28,5 +28,20 @@ namespace SelectPdf
         {
             return highlights;
         }
+
+        public bool HasContents()
+        {
+            return contents.Count > 0;
+        }
+
+        public void AddContent(MuSelection content)
+        {
+            contents.Add(content);
+        }
+
+        public List<MuSelection> GetContents()
+        {
+            return contents;
+        }
     }
 }

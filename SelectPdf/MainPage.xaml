@@ -19,9 +19,19 @@
         <canvas:CanvasControl Grid.Column="0" x:Name="selectCanvas" Draw="selectCanvas_Draw"/>
         <InkCanvas Grid.Column="0" x:Name="inkCanvas"/>
 
-        <Button Grid.Column="1" Content="Load File" Click="Load_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30"></Button>
-        <Button Grid.Column="1" Content="Selections" Click="Selection_Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30,10,30,80"></Button>
-        <Grid x:Name="selectionContainer" Background="#EDEDED" Height="940" Width="450" Canvas.Top="10" Margin="980,10,10,10" Visibility="Collapsed"/>
+        <Button Grid.Column="1" Click="Load_Button_Click" Height="50" Width="57" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5,20" Background="White">
+            <Image Source="Assets/open.png" Stretch="UniformToFill"/>
+        </Button>
+        <Button Grid.Column="1" Click="Selection_Button_Click" Height="50" Width="57" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5,10,5,80" Background="White">
+            <Image Source="Assets/select.png" Stretch="UniformToFill"/>
+        </Button>
+        <ListView Grid.Column="1" x:Name="selectionContainer" Background="#CED9DA"  Width="500" Margin="0,0,65,0" Visibility="Collapsed">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepItemsInView" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
     </Grid>
 
 </Page>

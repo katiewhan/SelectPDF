@@ -108,6 +108,8 @@
     <None Include="SelectPdf_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\open.png" />
+    <Content Include="Assets\select.png" />
     <Content Include="mupdftest.dll" />
     <Content Include="mupdftest.pdb" />
     <Content Include="Properties\Default.rd.xml" />

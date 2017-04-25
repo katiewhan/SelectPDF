@@ -30,6 +30,9 @@ using Windows.UI.Xaml.Shapes;
 using Windows.UI.Core;
 using Windows.UI;
 using Windows.UI.Input.Inking.Core;
+using Microsoft.Graphics.Canvas.Brushes;
+using Windows.UI.Xaml.Documents;
+using Windows.UI.Text;
 
 namespace SelectPdf
 {
@@ -118,6 +121,8 @@ public sealed partial class MainPage : Page
 
         private IntPtr currentDocument = IntPtr.Zero;
         private int currentPageNum = -1;
+
+        // use rich edit box to copy both image and text contents to clipboard
         private RichEditBox currentRtf = new RichEditBox();
 
         private List<MuRect> highlightList = new List<MuRect>();
@@ -135,9 +140,10 @@ public sealed partial class MainPage : Page
             this.InitializeComponent();
 
             inkCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
-            InkDrawingAttributes inkAttributes = inkCanvas.InkPresenter.CopyDefaultDrawingAttributes();
-            inkAttributes.Size = new Size(10, 5);
+            InkDrawingAttributes inkAttributes = InkDrawingAttributes.CreateForPencil();
+            inkAttributes.Size = new Size(15, 10);
             inkAttributes.Color = Colors.CadetBlue;
+            inkAttributes.PencilProperties.Opacity = 3;
             inkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(inkAttributes);
 
             inkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
@@ -146,6 +152,11 @@ public sealed partial class MainPage : Page
 
         private void InkCanvas_PointerWheel(object sender, PointerRoutedEventArgs e)
         {
+            if (pdfIm == null) // return if pdf not loaded
+            {
+                return;
+            }
+
             var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
             bool result;
             int updatedPage;
@@ -195,6 +206,11 @@ public sealed partial class MainPage : Page
             }
             inkCanvas.InkPresenter.StrokeContainer.Clear(); // clear the ink from the canvas
 
+            if (pdfIm == null) // return if pdf not loaded
+            {
+                return;
+            }
+
             // add selection to DLL using the list of MuPoints
             int selected = AddSelection(pointList.ToArray(), pointList.Count);
 
@@ -203,6 +219,7 @@ public sealed partial class MainPage : Page
                 // keep the new selection in the frontend
                 Selection currSel = new Selection(selected, currentPageNum);
 
+                // get highlight boxes
                 MuRect[] rectList = new MuRect[MAX_NUM];
                 int num = GetHighlights(selected, ref rectList, MAX_NUM);
                 Debug.WriteLine("output" + num);
@@ -213,6 +230,17 @@ public sealed partial class MainPage : Page
                     currSel.AddHighlightRect(rectList[k]);
                     highlightList.Add(rectList[k]);
                 }
+
+                // get selection contents
+                MuSelection[] contentList = new MuSelection[MAX_SEL_NUM];
+                int numContents = GetSelectionContents(selected, ref contentList, MAX_SEL_NUM);
+
+                for (int j = 0; j < numContents; j++)
+                {
+                    currSel.AddContent(contentList[j]);
+                }
+
+                CopySelectionContentsToClipboard(currSel);
 
                 // add the new selection to selection map under current page num
                 if (selectionMap.ContainsKey(currentPageNum))
@@ -237,24 +265,84 @@ public sealed partial class MainPage : Page
             return point;
         }
 
-        private static async Task LoadFile()
+        private async void CopySelectionContentsToClipboard(Selection sel)
+        {
+            // clear current rich edit box
+            currentRtf = new RichEditBox(); 
+
+            string selectionText = "\r\n";
+            RandomAccessStreamReference selectionImage = null;
+
+            foreach (MuSelection content in sel.GetContents())
+            {
+                if (content.type == (int)ContentType.IMAGE_CONTENT)
+                {
+                    IntPtr bytes = content.content;
+                    byte[] mngdArray = new byte[content.numBytes];
+                    try
+                    {
+                        Marshal.Copy(bytes, mngdArray, 0, content.numBytes);
+                        selectionImage = await AddImageByteArrayToRtf(mngdArray); // insert image to rich edit box
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                    }
+                }
+                else
+                {
+                    IntPtr bytes = content.content;
+                    string selText = Marshal.PtrToStringAnsi(bytes);
+                    selectionText += selText;
+                }
+            }
+
+            // insert text to rich edit box
+            currentRtf.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, selectionText);
+
+            // extract all contents from rich edit box
+            string temp, rtf;
+            currentRtf.Document.GetText(Windows.UI.Text.TextGetOptions.None, out temp);
+            var range = currentRtf.Document.GetRange(0, temp.Length - 1);
+            range.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out rtf);
+
+            // use data package to set fields of clipboard
+            // rich edit box contents to rtf field, text only to text field, last image only to image field
+            var dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
+            dataPackage.SetRtf(rtf);
+            dataPackage.SetText(selectionText);
+            if (selectionImage != null)
+            {
+                dataPackage.SetBitmap(selectionImage);
+            }
+            Clipboard.SetContent(dataPackage);
+        }
+
+        private static async Task<bool> LoadFile()
         {
             var openPicker = new FileOpenPicker();
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             openPicker.FileTypeFilter.Add(".pdf");
             StorageFile selectedFile = await openPicker.PickSingleFileAsync();
-
-            using (Stream stream = await selectedFile.OpenStreamForReadAsync())
+            if (selectedFile != null)
             {
-                using (var memoryStream = new MemoryStream())
+                using (Stream stream = await selectedFile.OpenStreamForReadAsync())
                 {
-                    stream.CopyTo(memoryStream);
-                    file = memoryStream.ToArray();
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        stream.CopyTo(memoryStream);
+                        file = memoryStream.ToArray();
+                        return true;
+                    }
                 }
+            }
+            else
+            {
+                return false;
             }
         }
 
-        private async Task<BitmapImage> ByteArrayToBitmapImage(byte[] byteArray, bool addToRtf)
+        private async Task<BitmapImage> ByteArrayToBitmapImage(byte[] byteArray)
         {
             if (byteArray != null)
             {
@@ -264,23 +352,34 @@ public sealed partial class MainPage : Page
                     var image = new BitmapImage();
                     stream.Seek(0);
                     image.SetSource(stream);
-                    if (addToRtf)
-                    {
-                        currentRtf.Document.Selection.InsertImage(image.PixelWidth, image.PixelHeight, 0, Windows.UI.Text.VerticalCharacterAlignment.Baseline, "Image", stream);
-                    }
                     return image;
                 }
             }
             return null;
         }
 
-        private async Task<RandomAccessStreamReference> ByteArrayToStreamRef(byte[] byteArray)
+        private async Task<RandomAccessStreamReference> AddImageByteArrayToRtf(byte[] byteArray)
         {
             if (byteArray != null)
             {
                 using (var stream = new InMemoryRandomAccessStream())
                 {
                     await stream.WriteAsync(byteArray.AsBuffer());
+                    BitmapImage image = new BitmapImage();
+                    stream.Seek(0);
+                    image.SetSource(stream);
+
+                    // resize image to a smaller size to prevent overflow
+                    var maxSize = 500;
+                    var origHeight = image.PixelHeight;
+                    var origWidth = image.PixelWidth;
+                    var ratioX = maxSize / (float)origWidth;
+                    var ratioY = maxSize / (float)origHeight;
+                    var ratio = Math.Min(ratioX, ratioY);
+                    var newHeight = (int)(origHeight * ratio);
+                    var newWidth = (int)(origWidth * ratio);
+
+                    currentRtf.Document.Selection.InsertImage(newWidth, newHeight, 0, Windows.UI.Text.VerticalCharacterAlignment.Baseline, "Image", stream);
 
                     return RandomAccessStreamReference.CreateFromStream(stream);
                 }
@@ -322,185 +421,83 @@ public sealed partial class MainPage : Page
         }
 
         private async void Load_Button_Click(object sender, RoutedEventArgs e)
-        {
-            //var dataPackageView = Clipboard.GetContent();
-            //if (dataPackageView.Contains(StandardDataFormats.Text))
-            //{
-            //    try
-            //    {
-            //        var text = await dataPackageView.GetTextAsync();
-            //        Debug.WriteLine(text);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //    }
-            //}
-            //if (dataPackageView.Contains(StandardDataFormats.Bitmap))
-            //{
-            //    Debug.WriteLine("bitmap");
-            //}
-            //if (dataPackageView.Contains(StandardDataFormats.Html))
-            //{
-            //    Debug.WriteLine("html");
-            //}
-            //if (dataPackageView.Contains(StandardDataFormats.Rtf))
-            //{
-            //    var r = await dataPackageView.GetRtfAsync();
-            //    Debug.WriteLine("rtf");
-            //    Debug.WriteLine(r);
-            //}
-            //if (dataPackageView.Contains(StandardDataFormats.StorageItems))
-            //{
-            //    Debug.WriteLine("storage items");
-            //}
-            //if (dataPackageView.Contains(StandardDataFormats.Uri))
-            //{
-            //    Debug.WriteLine("uri");
-            //}
+        {   
+            bool loaded = await LoadFile();
 
-            //var dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
-            ////dataPackage.SetData("AnsiText", "cry");
+            if (loaded)
+            {
+                currentDocument = Open(file, file.Length);
+                ActivateDocument(currentDocument);
+                currentPageNum = 0;
 
-            //var imagePicker = new FileOpenPicker
-
-            //{
-
-            //    ViewMode = PickerViewMode.Thumbnail,
-
-            //    SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-
-            //    FileTypeFilter = { ".jpg", ".png", ".bmp", ".gif", ".tif" }
-
-            //};
-
-            //string cu;
-            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.None, out cu);
-            //sad.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, cu + "omg so sad");
-
-            //var imageFile = await imagePicker.PickSingleFileAsync();
-            //string content;
-
-            //using (IRandomAccessStream stream = await imageFile.OpenAsync(FileAccessMode.Read))
-            //{
-            //    BitmapImage image = new BitmapImage();
-            //    await image.SetSourceAsync(stream);
-            //    sad.Document.Selection.InsertImage(image.PixelWidth, image.PixelHeight, 0, Windows.UI.Text.VerticalCharacterAlignment.Baseline, "Image", stream);
-            //}
-
-            //string cu2;
-            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out cu2);
-            //Debug.WriteLine(cu2);
-            //sad.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, cu2 + "more text");
-
-
-            // Ask for RTF here, if desired.
-            //string temp;
-            // Do not ask for RTF here, we just want the raw text
-            //sad.Document.GetText(Windows.UI.Text.TextGetOptions.None, out temp);
-            //var range = sad.Document.GetRange(0, temp.Length - 1);
-
-            // Ask for RTF here, if desired.
-            //range.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
-            //sad.Document.Selection.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
-
-            //dataPackage.SetRtf(content);
-            //Debug.WriteLine("here");
-            //Debug.WriteLine(content);
-            //Clipboard.SetContent(dataPackage);
-
-            //dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(imageFile));
-
-            //Clipboard.SetContent(dataPackage);
-
-            
-            await LoadFile();
-
-            currentDocument = Open(file, file.Length);
-            ActivateDocument(currentDocument);
-            currentPageNum = 0;
-
-            Render();
+                Render();
+            }
         }
 
         private async void Selection_Button_Click(object sender, RoutedEventArgs e)
         {
+            // toggle showing selection list
             if (selectionContainer.Visibility == Visibility.Collapsed)
             {
+                selectionContainer.Items.Add(new TextBlock {
+                    Text = "Current Selections",
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold
+                });
                 selectionContainer.Visibility = Visibility.Visible;
 
-                int numSelections = GetNumSelections();
-
-                for (int i = 0; i < numSelections; i++)
+                foreach (List<Selection> page in selectionMap.Values)
                 {
-                    selectionContainer.RowDefinitions.Add(new RowDefinition());
-                    Grid selectionGrid = new Grid();
-                    Grid.SetRow(selectionGrid, i);
-
-                    MuSelection[] contentList = new MuSelection[MAX_SEL_NUM];
-                    int numContents = GetSelectionContents(i, ref contentList, MAX_SEL_NUM);
-
-                    string selectionText = "";
-                    RandomAccessStreamReference selectionImage = null;
-
-                    for (int j = 0; j < numContents; j++)
+                    foreach (Selection sel in page)
                     {
-                        selectionGrid.RowDefinitions.Add(new RowDefinition());
+                        // for each selection, create a rich text block that contains all contents (both images and text)
+                        RichTextBlock block = new RichTextBlock();
+                        Paragraph paragraph = new Paragraph();
 
-                        if (contentList[j].type == (int)ContentType.IMAGE_CONTENT)
+                        foreach (MuSelection content in sel.GetContents())
                         {
-                            IntPtr bytes = contentList[j].content;
-                            byte[] mngdArray = new byte[contentList[j].numBytes];
-                            try
+                            if (content.type == (int)ContentType.IMAGE_CONTENT)
                             {
-                                Marshal.Copy(bytes, mngdArray, 0, contentList[j].numBytes);
+                                IntPtr bytes = content.content;
+                                byte[] mngdArray = new byte[content.numBytes];
+                                try
+                                {
+                                    Marshal.Copy(bytes, mngdArray, 0, content.numBytes);
 
-                                var bmp = await ByteArrayToBitmapImage(mngdArray, true);
-                                selectionImage = await ByteArrayToStreamRef(mngdArray);
-                                var img = new Image();
-                                img.Source = bmp;
-                                Grid.SetRow(img, j);
-                                selectionGrid.Children.Add(img);
+                                    var bmp = await ByteArrayToBitmapImage(mngdArray);
+                                    var img = new Image();
+                                    img.Source = bmp;
+
+                                    InlineUIContainer container = new InlineUIContainer();
+                                    container.Child = img;
+                                    paragraph.Inlines.Add(container);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine(ex);
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                Debug.WriteLine(ex);
+                                IntPtr bytes = content.content;
+                                string selText = Marshal.PtrToStringAnsi(bytes);
+
+                                Run run = new Run();
+                                run.Text = selText;
+                                paragraph.Inlines.Add(run);
                             }
-                        } else
-                        {
-                            IntPtr bytes = contentList[j].content;
-                            string selText = Marshal.PtrToStringAnsi(bytes);
-                            selectionText += selText;
-                            TextBlock txt = new TextBlock();
-                            txt.Text = selText;
-                            Grid.SetRow(txt, j);
-                            selectionGrid.Children.Add(txt);
                         }
+                        
+                        block.Blocks.Add(paragraph);
+                        block.Blocks.Add(new Paragraph());
+                        selectionContainer.Items.Add(block);
                     }
-
-                    currentRtf.Document.Selection.SetText(Windows.UI.Text.TextSetOptions.ApplyRtfDocumentDefaults, selectionText);
-
-                    string temp, content;
-                    currentRtf.Document.GetText(Windows.UI.Text.TextGetOptions.None, out temp);
-                    var range = currentRtf.Document.GetRange(0, temp.Length - 1);
-                    range.GetText(Windows.UI.Text.TextGetOptions.FormatRtf, out content);
-
-                    var dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
-                    dataPackage.SetRtf(content);
-                    dataPackage.SetText(selectionText);
-                    if (selectionImage != null)
-                    {
-                        dataPackage.SetBitmap(selectionImage);
-                    }
-                    Clipboard.SetContent(dataPackage);
-
-                    selectionContainer.Children.Add(selectionGrid);
                 }
-
             } else
             {
                 selectionContainer.Visibility = Visibility.Collapsed;
+                selectionContainer.Items.Clear(); // clear selection list
             }
-
         }
 
         private void selectCanvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args)
@@ -514,7 +511,22 @@ public sealed partial class MainPage : Page
                 {
                     foreach (MuRect rect in highlightList)
                     {
-                        args.DrawingSession.DrawRectangle(rect.x0 + marg, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0, Colors.Red);
+                        // this is a gradient brush for highlights that looks better on text but bad on images
+                        //var gradientStops = new CanvasGradientStop[]
+                        //{   new CanvasGradientStop { Position = 0, Color = Colors.Transparent },
+                        //    new CanvasGradientStop { Position = 0.2f, Color = Colors.Coral },
+                        //    new CanvasGradientStop { Position = 0.8f, Color = Colors.Coral },
+                        //    new CanvasGradientStop { Position = 1, Color = Colors.Transparent }
+                        //};
+                        //CanvasLinearGradientBrush rectBrush = new CanvasLinearGradientBrush(selectCanvas.Device, gradientStops)
+                        //{
+                        //    StartPoint = new System.Numerics.Vector2(rect.x0 + marg, rect.y0),
+                        //    EndPoint = new System.Numerics.Vector2(rect.x0 + marg, rect.y1)
+                        //};
+
+                        CanvasSolidColorBrush rectBrush = new CanvasSolidColorBrush(selectCanvas.Device, Colors.Coral);
+                        rectBrush.Opacity = 0.5f;
+                        args.DrawingSession.FillRectangle(rect.x0 + marg, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0, rectBrush);
                     }
                 }
             }

@@ -28,13 +28,13 @@
     <AppXManifest Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-22T19:32:37.764</Modified>
+      <Modified>2017-04-25T20:57:37.857</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.exe">
       <PackagePath>entrypoint\SelectPdf.exe</PackagePath>
-      <Modified>2017-04-22T19:32:37.397</Modified>
+      <Modified>2017-04-25T20:57:37.237</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\.nuget\packages\Microsoft.CSharp\4.0.0\lib\netcore50\Microsoft.CSharp.dll">
       <PackagePath>Microsoft.CSharp.dll</PackagePath>
@@ -456,13 +456,13 @@
       <PackagePath>Microsoft.Graphics.Canvas.winmd</PackagePath>
       <Modified>2016-11-30T07:58:38.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\mupdftest.dll">
-      <PackagePath>mupdftest.dll</PackagePath>
-      <Modified>2017-04-22T19:20:12.192</Modified>
+    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Assets\open.png">
+      <PackagePath>Assets\open.png</PackagePath>
+      <Modified>2017-04-25T02:55:16.577</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Properties\Default.rd.xml">
-      <PackagePath>Properties\Default.rd.xml</PackagePath>
-      <Modified>2017-03-14T19:28:08.720</Modified>
+    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Assets\select.png">
+      <PackagePath>Assets\select.png</PackagePath>
+      <Modified>2017-04-25T02:55:24.068</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Assets\LockScreenLogo.scale-200.png">
       <PackagePath>Assets\LockScreenLogo.scale-200.png</PackagePath>
@@ -498,9 +498,17 @@
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2015-09-20T21:30:08.000</Modified>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\mupdftest.dll">
+      <PackagePath>mupdftest.dll</PackagePath>
+      <Modified>2017-04-25T20:42:30.872</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\Properties\Default.rd.xml">
+      <PackagePath>Properties\Default.rd.xml</PackagePath>
+      <Modified>2017-03-14T19:28:08.720</Modified>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\SelectPdf.xr.xml">
       <PackagePath>SelectPdf.xr.xml</PackagePath>
-      <Modified>2017-04-22T17:44:48.859</Modified>
+      <Modified>2017-04-25T20:48:28.260</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -509,11 +517,11 @@
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2017-04-22T19:20:15.767</Modified>
+      <Modified>2017-04-25T20:50:54.581</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\katiehan\Documents\mupdftest\SelectPdf\bin\x64\Debug\Core\SelectPdf.exe">
       <PackagePath>SelectPdf.exe</PackagePath>
-      <Modified>2017-04-22T19:32:37.754</Modified>
+      <Modified>2017-04-25T20:57:37.844</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

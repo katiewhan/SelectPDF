@@ -49,7 +49,7 @@ void BracketSelection::Select(fz_context* ctx, fz_stext_page* page, fz_matrix ct
 								c = '?';
 							char curr = c; // for debugging
 
-							if (hitbox.x0 <= m_avgx && hitbox.x1 >= m_avgx) {
+							if ((hitbox.x0 - 10) <= m_avgx && (hitbox.x1 + 10) >= m_avgx) {
 								selecting = true;
 							}
 
