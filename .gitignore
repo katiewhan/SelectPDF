@@ -3,3 +3,4 @@ SelectPdf/obj/*
 mupdftest/x64/Debug/*
 mupdftest.VC.*
 x64/Debug/*
+Test/

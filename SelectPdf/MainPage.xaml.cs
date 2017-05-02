@@ -121,6 +121,8 @@ public sealed partial class MainPage : Page
 
         private IntPtr currentDocument = IntPtr.Zero;
         private int currentPageNum = -1;
+        private double currentY = -1; // keeps track of y-coordinate when scrolling with touch
+        private int currentD = 0;
 
         // use rich edit box to copy both image and text contents to clipboard
         private RichEditBox currentRtf = new RichEditBox();
@@ -147,20 +149,55 @@ public sealed partial class MainPage : Page
             inkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(inkAttributes);
 
             inkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            inkCanvas.PointerWheelChanged += new PointerEventHandler(InkCanvas_PointerWheel);
+            inkCanvas.PointerWheelChanged += InkCanvas_PointerWheel;
+            inkCanvas.PointerMoved += InkCanvas_OnPointerMoved;
+            inkCanvas.PointerReleased += InkCanvas_OnPointerReleased;
+        }
+
+        private void InkCanvas_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var newY = e.GetCurrentPoint(sender as UIElement).Position.Y;
+            if (currentY != -1)
+            {
+                if (currentY - newY > 0)
+                {
+                    currentD -= 1;
+                } else if (currentY - newY < 0)
+                {
+                    currentD += 1;
+                }
+            }
+            currentY = newY;
+
+            e.Handled = true;
+        }
+
+        private void InkCanvas_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            ScrollPdf(currentD);
+            currentY = -1;
+            currentD = 0;
+
+            e.Handled = true;
         }
 
         private void InkCanvas_PointerWheel(object sender, PointerRoutedEventArgs e)
+        {
+            var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
+            ScrollPdf(d);
+            e.Handled = true;
+        }
+
+        private void ScrollPdf(int d)
         {
             if (pdfIm == null) // return if pdf not loaded
             {
                 return;
             }
 
-            var d = e.GetCurrentPoint(sender as UIElement).Properties.MouseWheelDelta;
             bool result;
             int updatedPage;
-            
+
             // determine if scrolling up or down
             if (d < 0)
             {
@@ -181,7 +218,7 @@ public sealed partial class MainPage : Page
                 highlightList.Clear();
                 if (selectionMap.ContainsKey(currentPageNum))
                 {
-                    foreach(Selection s in selectionMap[currentPageNum])
+                    foreach (Selection s in selectionMap[currentPageNum])
                     {
                         highlightList.AddRange(s.GetHighlightRects());
                     }
@@ -189,7 +226,6 @@ public sealed partial class MainPage : Page
                 // render updated page
                 Render();
             }
-            e.Handled = true;
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
@@ -426,6 +462,10 @@ public sealed partial class MainPage : Page
 
             if (loaded)
             {
+                selectionMap = new Dictionary<int, List<Selection>>();
+                highlightList = new List<MuRect>();
+                pdfIm = null;
+
                 currentDocument = Open(file, file.Length);
                 ActivateDocument(currentDocument);
                 currentPageNum = 0;
